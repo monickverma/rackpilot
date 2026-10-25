@@ -139,7 +139,19 @@ WhatsApp text ─► rules parser (src/lib/parser) ─┬─► order lines ─�
 | [ERPNext stock reservation](https://docs.frappe.io/erpnext/stock-reservation) | Reserves stock against sales orders or pick lists (v15+); reservations can be released from the order or cancelled one by one | Reservations as their own records that can be released, and pick lists built from what is reserved |
 | [Medusa Inventory Module](https://docs.medusajs.com/resources/commerce-modules/inventory/concepts) | Tracks stocked and reserved quantity per location. Available stock is stocked minus reserved, and [fulfilment](https://docs.medusajs.com/resources/commerce-modules/inventory/inventory-in-flows) consumes the reservation | The same on-hand / reserved / free model. Here every change is also a ledger row, so the totals can be rebuilt and checked |
 | [Sift](https://github.com/p-rth12999/Sift) | Turns Hinglish order chats into dispatch tables with small local LLMs (Ollama) and a JSON schema | Schema-constrained extraction for the fallback. RackPilot keeps rules as the default and connects orders to stock, which Sift doesn't track |
-| [Chat2Cash](https://github.com/swayam-mishra/Chat2Cash) | WhatsApp order extraction with Claude, JSON-schema prompts and few-shot Hinglish examples, then a human check before invoicing; reports roughly 78% → 94% accuracy in beta | A human confirms every draft before stock moves. Accuracy is measured on a published test set with a holdout split |
+| [Chat2Cash](https://devfolio.co/projects/chatcash-9791), now [Snapdo](https://github.com/swayam-mishra/snapdo-web) | WhatsApp order extraction with Claude, JSON-schema prompts and few-shot Hinglish examples, then a human check before invoicing. Its Devfolio page reports about 78% → 94% accuracy in beta, without saying how it was measured. The repo has since been renamed and now holds only the frontend | A human confirms every draft before stock moves. Accuracy is measured on a published test set with a holdout split |
+
+### Similar projects found after the build
+
+A wider search on 26 Oct 2026, after RackPilot was built, turned up these. RackPilot didn't borrow from them, but they are the closest comparisons. Most are small, new repos.
+
+| Project | What it does | How RackPilot compares |
+| --- | --- | --- |
+| [dukaandaar](https://github.com/chirag120670598-dotcom/dukaandaar) | WhatsApp order bot for Indian shops, with a deterministic Hinglish parser (deliberately not an LLM), GST invoices and UPI payment links | Also rules-first. dukaandaar prices and bills the order; RackPilot reserves sized stock on racks and keeps a ledger behind every count |
+| [Parchi](https://github.com/mauryasagar/parchi) | Turns Hinglish WhatsApp orders into an order sheet, totals and a daily prep list for home food sellers. A local Gemma model only reads; Python does the maths, and unclear orders get a Check flag | The same split of work. Parchi plans what to cook; RackPilot holds stock per size and colour and flags what will run out |
+| [ChatLedger](https://github.com/tharu200304/ChatLedger) | Turns WhatsApp chat exports into an order sheet for home sellers. The LLM reads intent only, prices and IDs are computed in code, and every field links back to its source message | RackPilot reads with rules first and Claude only as a fallback, and links its stock numbers to ledger rows |
+| [IndicOrderBench](https://github.com/Lingikaushikreddy/indicorderbench) | A benchmark and CI gate for English and Hinglish voice ordering agents. It checks the order the agent actually placed, not what it said | RackPilot's parser test is strict in the same way: a message counts only if every line and the due date are exactly right |
+| [Vendure](https://github.com/vendurehq/vendure) | Open-source headless commerce. Its stock movements are adjustment, allocation, release, sale, cancellation and return | Nearly the same ledger as RackPilot's receive, reserve, release, sale, adjust and exchange, arrived at separately |
 
 ## Limitations
 
