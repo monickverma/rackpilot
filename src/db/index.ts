@@ -1,6 +1,8 @@
 // One SQLite connection per server process, using Node's built-in driver.
 // The file is created and seeded with the synthetic shop on first use.
 // DATABASE_PATH picks the file (":memory:" for tests); default ./local.db.
+// On Vercel the deployment is read-only, so each server instance keeps its
+// own shop in memory, seeded when the instance starts.
 
 import { DatabaseSync, type StatementSync } from "node:sqlite";
 import path from "node:path";
@@ -12,7 +14,7 @@ type Param = null | number | string;
 const cache = globalThis as unknown as { __rackpilot?: { conn: DatabaseSync; statements: Map<string, StatementSync> } };
 
 function open() {
-  const file = process.env.DATABASE_PATH ?? path.join(process.cwd(), "local.db");
+  const file = process.env.DATABASE_PATH ?? (process.env.VERCEL ? ":memory:" : path.join(process.cwd(), "local.db"));
   const conn = new DatabaseSync(file);
   conn.exec("PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;");
   if (file !== ":memory:") conn.exec("PRAGMA journal_mode = WAL;");

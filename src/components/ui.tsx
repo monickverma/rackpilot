@@ -76,23 +76,26 @@ export function StatusBadge({ tone = "neutral", children }: { tone?: Tone; child
 }
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";
+type Size = "sm" | "md" | "lg";
 
-const buttonClass = (variant: Variant, size: "sm" | "md") =>
+const buttonClass = (variant: Variant, size: Size) =>
   cn(
-    "inline-flex items-center justify-center gap-x-1.5 whitespace-nowrap rounded-md txt-compact-small-plus outline-hidden transition-[color,background-color,box-shadow]",
+    "inline-flex items-center justify-center whitespace-nowrap rounded-md outline-hidden transition-[color,background-color,box-shadow]",
     "disabled:pointer-events-none disabled:bg-panel-2 disabled:bg-none disabled:text-disabled disabled:shadow-button",
-    size === "sm" ? "h-7 px-2" : "h-8 px-3",
+    size === "sm" && "h-7 gap-x-1.5 px-2 txt-compact-small-plus",
+    size === "md" && "h-8 gap-x-1.5 px-3 txt-compact-small-plus",
+    size === "lg" && "h-10 gap-x-2 px-4 text-[14px] font-medium leading-5",
     variant === "primary" && "bg-inverted bg-linear-to-b from-white/12 to-transparent text-inverted-fg shadow-inverted hover:bg-inverted-hover focus-visible:shadow-inverted-focus",
     variant === "secondary" && "bg-button text-fg shadow-button hover:bg-button-hover focus-visible:shadow-button-focus",
     variant === "ghost" && "text-muted hover:bg-ghost-hover hover:text-fg focus-visible:shadow-focus",
     variant === "danger" && "bg-button text-bad shadow-button hover:bg-button-hover focus-visible:shadow-button-focus",
   );
 
-export function Button({ variant = "secondary", size = "md", className, ...props }: ComponentProps<"button"> & { variant?: Variant; size?: "sm" | "md" }) {
+export function Button({ variant = "secondary", size = "md", className, ...props }: ComponentProps<"button"> & { variant?: Variant; size?: Size }) {
   return <button className={cn(buttonClass(variant, size), className)} {...props} />;
 }
 
-export function ButtonLink({ variant = "secondary", size = "md", className, ...props }: ComponentProps<typeof Link> & { variant?: Variant; size?: "sm" | "md" }) {
+export function ButtonLink({ variant = "secondary", size = "md", className, ...props }: ComponentProps<typeof Link> & { variant?: Variant; size?: Size }) {
   return <Link className={cn(buttonClass(variant, size), className)} {...props} />;
 }
 

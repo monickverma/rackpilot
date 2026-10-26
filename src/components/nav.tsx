@@ -6,11 +6,11 @@ import { Suspense, useEffect, useRef, useState, useTransition, type ReactNode } 
 import { createPortal } from "react-dom";
 import { resetDemoAction } from "@/app/actions";
 import { orderCode } from "@/lib/format";
-import { ClipboardIcon, DashboardIcon, FlaskIcon, MessagePlusIcon, PackageIcon, PanelLeftIcon, ResetIcon, ScrollIcon, TriangleRightIcon, XIcon } from "./icons";
+import { ClipboardIcon, DashboardIcon, FlaskIcon, GlobeIcon, MessagePlusIcon, PackageIcon, PanelLeftIcon, ResetIcon, ScrollIcon, TriangleRightIcon, XIcon } from "./icons";
 import { cn } from "./ui";
 
 const LINKS = [
-  { href: "/", label: "Dashboard", icon: DashboardIcon, exact: true },
+  { href: "/dashboard", label: "Dashboard", icon: DashboardIcon, exact: true },
   { href: "/orders/new", label: "New order", icon: MessagePlusIcon, exact: true },
   { href: "/orders", label: "Orders", icon: ClipboardIcon, exact: false },
   { href: "/inventory", label: "Inventory", icon: PackageIcon, exact: false },
@@ -62,6 +62,18 @@ function NavList({ pathname }: { pathname: string | null }) {
   );
 }
 
+/** Back to the website at /, which explains what the demo is. */
+export function WebsiteLink() {
+  return (
+    <Link href="/" className={itemClass(false)}>
+      <span className="grid size-6 place-items-center">
+        <GlobeIcon size={15} />
+      </span>
+      About RackPilot
+    </Link>
+  );
+}
+
 export function ResetDemoButton() {
   const [pending, start] = useTransition();
   return (
@@ -88,7 +100,7 @@ interface Crumb {
 
 function crumbsFor(pathname: string): Crumb[] {
   const [section, id, sub] = pathname.split("/").filter(Boolean);
-  if (!section) return [{ label: "Dashboard" }];
+  if (section === "dashboard") return [{ label: "Dashboard" }];
   if (section === "orders") {
     const orders = { label: "Orders", href: "/orders" };
     if (!id) return [{ label: "Orders" }];

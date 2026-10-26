@@ -1,0 +1,7 @@
+# Local-only files a CLI deploy shouldn't upload (Vercel already skips node_modules and .git).
+.claude
+.next
+.env*
+local.db
+local.db-*
+*.tsbuildinfo

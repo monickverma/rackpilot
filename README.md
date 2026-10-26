@@ -5,7 +5,7 @@ RackPilot turns WhatsApp orders into reserved stock and rack pick lists for a sm
 Hacker House Goa 2026 Wild Card entry.
 
 - **Demo video:** _link to be added_
-- **Live demo:** not deployed yet. [Run it locally](#run-it) in two commands.
+- **Live demo:** [rackpilot-eta.vercel.app](https://rackpilot-eta.vercel.app), with the demo shop at [/dashboard](https://rackpilot-eta.vercel.app/dashboard). Or [run it locally](#run-it) in two commands.
 
 ## The problem
 
@@ -99,7 +99,7 @@ npm install
 npm run dev
 ```
 
-Then open http://localhost:3000. The first request creates `local.db` and seeds it.
+Then open http://localhost:3000 for the website, or http://localhost:3000/dashboard for the demo shop. The first demo request creates `local.db` and seeds it.
 
 - **Optional Claude fallback:** copy `.env.example` to `.env.local` and set `ANTHROPIC_API_KEY`. `.env.local` is ignored by git.
 - **Checks:** `npm test` runs the end-to-end smoke test of the demo flow and then the parser eval. `npm run typecheck` and `npm run lint` are also clean.
@@ -120,8 +120,10 @@ WhatsApp text ─► rules parser (src/lib/parser) ─┬─► order lines ─�
 - **Look.** Modelled on Medusa's admin dashboard. The colours, shadows and type sizes are adapted from its design system, [`@medusajs/ui-preset`](https://github.com/medusajs/medusa/tree/develop/packages/design-system/ui-preset) (MIT). Light is the default theme, and a dark theme can be picked in the sidebar.
 - **Database.** SQLite through Node's built-in `node:sqlite`, with plain SQL: no ORM and no native module to compile. The schema is in [`src/db/schema.ts`](src/db/schema.ts) and the seed in [`src/lib/seed/`](src/lib/seed/).
 - **Domain code** ([`src/lib/`](src/lib/)): `inventory.ts` (ledger, stock card, reconciliation), `orders.ts` (draft, confirm, pick, fulfil, cancel), `match.ts`, `insights.ts`, `parser/` (rules), `claude.ts` (fallback).
+- **Website and demo.** Two route groups with their own layouts. [`src/app/(site)`](src/app/(site)) is the public website at `/`, which explains the product and links into the demo. [`src/app/(demo)`](src/app/(demo)) is the demo shop itself, starting at `/dashboard`.
 - **Pages.**
-  - Dashboard
+  - Website (`/`)
+  - Dashboard (`/dashboard`)
   - New order
   - Orders
   - Order detail with its ledger rows
@@ -157,7 +159,7 @@ A wider search on 26 Oct 2026, after RackPilot was built, turned up these. RackP
 ## Limitations
 
 - One shop, no login, and no concurrency control beyond SQLite transactions.
-- It isn't deployed. `node:sqlite` needs a persistent disk, so a serverless host would need a hosted SQLite (such as Turso) adapter.
+- The live demo on Vercel has no persistent disk, so each server instance keeps its own shop in memory, seeded when it starts (about 0.2 s). Changes last until that instance restarts, and visitors who land on different instances see different shops. A lasting deployment would need a disk or a hosted SQLite such as Turso.
 - Messages are pasted. There's no WhatsApp Business API integration.
 - The rules parser still misses some patterns. Two holdout cases fail: "M L XL ek ek, kurti mustard" and "dono black M" ("both black M").
 - The Claude fallback is verified only against a mock API (see above).

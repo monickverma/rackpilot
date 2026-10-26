@@ -148,5 +148,5 @@ export async function counterSaleAction(prev: ActionResult, form: FormData) {
 
 export async function resetDemoAction(): Promise<void> {
   resetDatabase();
-  redirect("/");
+  redirect("/dashboard");
 }

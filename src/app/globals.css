@@ -280,10 +280,23 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Website hero: a faint 48px grid that fades out from the top centre. */
+@utility bg-grid {
+  background-image: linear-gradient(to right, var(--line) 1px, transparent 1px), linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: center top;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 30%, transparent 100%);
+}
+
 /* In the base layer so component utilities (outline-hidden, shadows) win. */
 @layer base {
   html {
     color-scheme: light;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
   }
   html[data-theme="dark"] {
     color-scheme: dark;

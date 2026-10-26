@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
@@ -9,6 +10,8 @@ import { colourDot, dueDay, dueIn, plural, rupees, shortDay } from "@/lib/format
 import { SEASONS } from "@/lib/insights";
 import { insights, reconcile, weeklySales } from "@/lib/inventory";
 import { listOrders } from "@/lib/orders";
+
+export const metadata: Metadata = { title: "Dashboard" };
 
 export default function DashboardPage() {
   return (

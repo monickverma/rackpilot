@@ -4,7 +4,7 @@ import { ParserPlayground } from "@/components/parser-playground";
 import { Badge, Card, CardHeader, PageHeader, Stat, Table, Td, Th } from "@/components/ui";
 import { evaluate, pct, type TestCase } from "@/lib/parser/evaluate";
 import { parseOrder } from "@/lib/parser/parse";
-import testset from "../../../data/parser-testset.json";
+import testset from "../../../../data/parser-testset.json";
 
 export const metadata: Metadata = { title: "Parser accuracy" };
 
