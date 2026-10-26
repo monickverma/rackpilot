@@ -6,6 +6,8 @@ const DAY = 86_400_000;
 
 export const rupees = (n: number) => `₹${Math.round(n).toLocaleString("en-IN")}`;
 
+export const orderCode = (id: number) => `ORD-${1000 + id}`;
+
 const WEEKDAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
 function ordinal(n: number) {

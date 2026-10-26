@@ -6,7 +6,7 @@ import { all, get, run, tx } from "../db/index.ts";
 import type { LineStatus, OrderStatus } from "../db/schema.ts";
 import { holdsOn, post, StockError, variantById, type Hold, type MovementRow, movements } from "./inventory.ts";
 import { SALES_WINDOW_DAYS } from "./insights.ts";
-import { dueDay } from "./format.ts";
+import { dueDay, orderCode } from "./format.ts";
 import { matchLines, type CatalogVariant, type LineMatch } from "./match.ts";
 import { resolveDue } from "./parser/due.ts";
 import { parseOrder } from "./parser/parse.ts";
@@ -118,7 +118,7 @@ export function confirmOrder(input: ConfirmInput, now = new Date()): { id: numbe
   }
   return tx(() => {
     const id = (get<{ id: number }>("SELECT COALESCE(MAX(id), 0) + 1 AS id FROM orders")!).id;
-    const code = `ORD-${1000 + id}`;
+    const code = orderCode(id);
     const dueAt = resolveDue(input.dueLabel, now)?.getTime() ?? null;
     run(
       "INSERT INTO orders (id, code, customer_name, raw_message, parser, status, due_label, due_at, created_at) VALUES (?, ?, ?, ?, ?, 'confirmed', ?, ?, ?)",

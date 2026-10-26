@@ -117,6 +117,7 @@ WhatsApp text ─► rules parser (src/lib/parser) ─┬─► order lines ─�
 ```
 
 - **Framework.** Next.js 16 App Router with React 19. Pages are Server Components that stream inside `<Suspense>`, and every write is a Server Action ([`src/app/actions.ts`](src/app/actions.ts)). Styling is Tailwind CSS v4.
+- **Look.** Modelled on Medusa's admin dashboard. The colours, shadows and type sizes are adapted from its design system, [`@medusajs/ui-preset`](https://github.com/medusajs/medusa/tree/develop/packages/design-system/ui-preset) (MIT). Light is the default theme, and a dark theme can be picked in the sidebar.
 - **Database.** SQLite through Node's built-in `node:sqlite`, with plain SQL: no ORM and no native module to compile. The schema is in [`src/db/schema.ts`](src/db/schema.ts) and the seed in [`src/lib/seed/`](src/lib/seed/).
 - **Domain code** ([`src/lib/`](src/lib/)): `inventory.ts` (ledger, stock card, reconciliation), `orders.ts` (draft, confirm, pick, fulfil, cancel), `match.ts`, `insights.ts`, `parser/` (rules), `claude.ts` (fallback).
 - **Pages.**

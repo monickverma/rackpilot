@@ -116,7 +116,7 @@ export function OrderIntake({ inbox, claudeEnabled }: { inbox: InboxMessage[]; c
   );
 
   return (
-    <div className="grid gap-6 lg:grid-cols-12">
+    <div className="grid gap-3 lg:grid-cols-12">
       <Card className="h-fit lg:col-span-4">
         <CardHeader icon={<InboxIcon />} title="WhatsApp inbox" description="Synthetic messages. Click one to read it." />
         <ul className="divide-y divide-line">
@@ -125,15 +125,15 @@ export function OrderIntake({ inbox, claudeEnabled }: { inbox: InboxMessage[]; c
               <button
                 type="button"
                 onClick={() => pick(m)}
-                className={cn("flex w-full gap-3 px-4 py-3 text-left transition-colors hover:bg-panel-2/60", message === m.text && "bg-accent-soft/50")}
+                className={cn("flex w-full gap-3 px-4 py-3 text-left -outline-offset-2 transition-colors", message === m.text ? "bg-accent-soft" : "hover:bg-panel-2")}
               >
-                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-panel-2 text-[11px] font-semibold text-muted ring-1 ring-line">
+                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-panel txt-compact-xsmall-plus text-muted shadow-button">
                   {m.customer.split(" ").map((p) => p[0]).join("").slice(0, 2)}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center justify-between gap-2">
                     <span className="text-[13px] font-medium">{m.customer}</span>
-                    <span className="text-[11px] text-faint">{m.time}</span>
+                    <span className="text-xs text-faint">{m.time}</span>
                   </span>
                   <span className="mt-0.5 line-clamp-2 text-xs text-muted">{m.text}</span>
                 </span>
@@ -143,11 +143,11 @@ export function OrderIntake({ inbox, claudeEnabled }: { inbox: InboxMessage[]; c
         </ul>
       </Card>
 
-      <div className="space-y-6 lg:col-span-8">
+      <div className="space-y-3 lg:col-span-8">
         <Card>
           <CardHeader title="Message" description="Paste it exactly as the customer sent it, Hinglish and all." />
-          <div className="space-y-3 p-5">
-            <input value={customer} onChange={(e) => setCustomer(e.target.value)} placeholder="Customer name" className={cn(inputClass, "max-w-xs")} maxLength={80} />
+          <div className="space-y-3 px-6 py-4">
+            <input value={customer} onChange={(e) => setCustomer(e.target.value)} placeholder="Customer name" className={cn(inputClass, "w-full max-w-xs")} maxLength={80} />
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
@@ -160,17 +160,18 @@ export function OrderIntake({ inbox, claudeEnabled }: { inbox: InboxMessage[]; c
               rows={3}
               maxLength={2000}
               placeholder="Bhaiya 3 black kurti M, 2 L, 1 maroon XL, Saturday tak"
-              className={cn(inputClass, "h-auto resize-y py-2 leading-6")}
+              className={cn(inputClass, "h-auto w-full resize-y py-2 leading-6")}
             />
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-xs text-muted">
                 Read by rules{claudeEnabled ? "; Claude only if you ask" : ", no AI"}. Nothing changes until you confirm.
               </p>
               <Button variant="primary" onClick={() => read()} disabled={reading || !message.trim()}>
-                {reading ? "Reading…" : "Read order"} <kbd className="hidden rounded border border-white/30 px-1 text-[10px] sm:inline">Ctrl ↵</kbd>
+                {reading ? "Reading…" : "Read order"}
+                <kbd className="hidden h-5 items-center rounded-[4px] border border-white/20 bg-white/10 px-1 font-sans text-[11px] font-medium sm:inline-flex">Ctrl ↵</kbd>
               </Button>
             </div>
-            {error && <p className="text-sm text-bad">{error}</p>}
+            {error && <p className="txt-small text-bad">{error}</p>}
           </div>
         </Card>
 
@@ -187,7 +188,7 @@ export function OrderIntake({ inbox, claudeEnabled }: { inbox: InboxMessage[]; c
               action={<Badge tone={draft.confidence === "high" ? "ok" : draft.confidence === "medium" ? "warn" : "bad"}>{draft.confidence} confidence</Badge>}
             />
             {draft.parser === "rules" && draft.confidence !== "high" && (
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-warn-soft/40 px-5 py-3 text-[13px]">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-warn-soft/40 px-6 py-3 text-[13px]">
                 <span>
                   The rules aren&apos;t sure about this message.
                   {claudeEnabled ? " Claude can read it; stock is still checked here." : " Set ANTHROPIC_API_KEY in .env.local to offer a Claude reading."}
@@ -200,23 +201,23 @@ export function OrderIntake({ inbox, claudeEnabled }: { inbox: InboxMessage[]; c
               </div>
             )}
             {draft.parser === "claude" && (
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-accent-soft/40 px-5 py-3 text-[13px]">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-accent-soft/40 px-6 py-3 text-[13px]">
                 <span>Read by Claude. The order will be saved as read by Claude.</span>
                 <Button size="sm" onClick={() => read(draft.message)} disabled={reading}>
                   Use the rules reading
                 </Button>
               </div>
             )}
-            <div className="border-b border-line px-5 py-4">
+            <div className="border-b border-line px-6 py-4">
               {draft.parser === "claude" ? (
-                <p className="text-[15px] leading-7">{draft.message}</p>
+                <p className="text-[14px] leading-7">{draft.message}</p>
               ) : (
                 <>
                   <Highlighted message={draft.message} tokens={draft.tokens} />
-                  <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-muted">
+                  <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted">
                     {LEGEND.map(([k, label]) => (
                       <span key={k} className="inline-flex items-center gap-1">
-                        <span className={cn("rounded px-1", TOKEN_STYLE[k])}>{label === "not understood" ? "abc" : "Aa"}</span> {label}
+                        <span className={cn("rounded-[4px] px-1", TOKEN_STYLE[k])}>{label === "not understood" ? "abc" : "Aa"}</span> {label}
                       </span>
                     ))}
                   </div>
@@ -241,10 +242,10 @@ export function OrderIntake({ inbox, claudeEnabled }: { inbox: InboxMessage[]; c
                 {lines.map((l, i) => {
                   const c = l.line.match.candidates.find((x) => x.variantId === l.variantId);
                   return (
-                    <li key={l.key} className="grid gap-3 px-5 py-4 sm:grid-cols-[1fr_auto]">
+                    <li key={l.key} className="grid gap-3 px-6 py-4 sm:grid-cols-[1fr_auto]">
                       <div className="min-w-0 space-y-2">
                         <div className="flex flex-wrap items-center gap-2 text-[13px]">
-                          <span className="grid size-5 place-items-center rounded-full bg-panel-2 text-[11px] text-muted">{i + 1}</span>
+                          <span className="grid size-5 place-items-center rounded-full bg-panel-2 text-xs text-muted">{i + 1}</span>
                           <span className="font-medium">{said(l.line)}</span>
                           <Mono className="text-muted">“{l.line.sourceText}”</Mono>
                           {l.line.inherited.length > 0 && <Badge>{l.line.inherited.join(" + ")} from line before</Badge>}
@@ -255,7 +256,7 @@ export function OrderIntake({ inbox, claudeEnabled }: { inbox: InboxMessage[]; c
                         <select
                           value={l.variantId ?? ""}
                           onChange={(e) => update(l.key, { variantId: e.target.value ? Number(e.target.value) : null })}
-                          className={cn(inputClass, "max-w-full pr-8 text-[13px]", !c && "border-warn")}
+                          className={cn(inputClass, "w-full pr-8", !c && "ring-1 ring-warn/60")}
                         >
                           <option value="">{l.line.match.candidates.length ? "— Choose a product —" : "— No match: skip this line —"}</option>
                           {l.line.match.candidates.map((x) => (
@@ -281,7 +282,7 @@ export function OrderIntake({ inbox, claudeEnabled }: { inbox: InboxMessage[]; c
                           <button
                             type="button"
                             onClick={() => setLines((ls) => ls.filter((x) => x.key !== l.key))}
-                            className="grid size-9 place-items-center rounded-lg text-muted hover:bg-panel-2 hover:text-bad"
+                            className="grid size-8 place-items-center rounded-md text-muted outline-hidden transition-colors hover:bg-ghost-hover hover:text-bad focus-visible:shadow-focus"
                             aria-label="Remove line"
                           >
                             <TrashIcon size={15} />
@@ -294,12 +295,12 @@ export function OrderIntake({ inbox, claudeEnabled }: { inbox: InboxMessage[]; c
                 })}
               </ul>
             ) : (
-              <p className="px-5 py-6 text-sm text-muted">No order lines found in this message.</p>
+              <p className="px-6 py-6 txt-small text-muted">No order lines found in this message.</p>
             )}
 
-            <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-panel-2/40 px-5 py-4">
+            <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-subtle px-6 py-4">
               <p className="text-[13px] text-muted">
-                Will reserve <span className="font-semibold text-fg">{totals.reserve}</span> pcs
+                Will reserve <span className="font-medium text-fg">{totals.reserve}</span> pcs
                 {totals.short > 0 && <span className="text-bad"> · {totals.short} short</span>}
                 {totals.skipped > 0 && <span className="text-warn"> · {totals.skipped} not matched</span>}
               </p>

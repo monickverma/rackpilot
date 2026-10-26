@@ -8,7 +8,7 @@ import { ActionForm, SubmitButton } from "@/components/action-form";
 import { AlertIcon, CalendarIcon, ClockIcon, PrinterIcon, ScrollIcon } from "@/components/icons";
 import { MovementTable } from "@/components/movement-table";
 import { LineBadge, OrderBadge, SeverityBadge } from "@/components/status";
-import { Badge, ButtonLink, Card, CardHeader, CardSkeleton, Location, Mono, PageHeader, Swatch, Table, Td, Th } from "@/components/ui";
+import { ButtonLink, Card, CardHeader, CardSkeleton, Location, Mono, PageHeader, Swatch, Table, Td, Th } from "@/components/ui";
 import { colourDot, dateTime, dueDay, dueIn, plural } from "@/lib/format";
 import { insights } from "@/lib/inventory";
 import { getOrder } from "@/lib/orders";
@@ -37,11 +37,6 @@ async function Order({ params }: { params: Promise<{ id: string }> }) {
   return (
     <>
       <PageHeader
-        eyebrow={
-          <span className="flex items-center gap-1.5">
-            <Link href="/orders" className="hover:text-fg">Orders</Link> / <Mono>{order.code}</Mono>
-          </span>
-        }
         title={
           <span className="flex flex-wrap items-center gap-2.5">
             {order.customerName} <OrderBadge status={order.status} />
@@ -49,6 +44,7 @@ async function Order({ params }: { params: Promise<{ id: string }> }) {
         }
         description={
           <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <Mono className="text-fg">{order.code}</Mono>
             <span className="inline-flex items-center gap-1"><ClockIcon size={13} /> {dateTime(order.createdAt)}</span>
             {order.dueAt && (
               <span className="inline-flex items-center gap-1">
@@ -77,8 +73,8 @@ async function Order({ params }: { params: Promise<{ id: string }> }) {
         }
       />
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="min-w-0">
           <Card>
             <CardHeader title="Lines" description="Each line was reserved from free stock (on hand minus what other orders hold) when the order was confirmed." />
             <Table>
@@ -140,13 +136,13 @@ async function Order({ params }: { params: Promise<{ id: string }> }) {
           </Card>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-3">
           <Card>
             <CardHeader title="Customer's message" />
-            <div className="p-5">
+            <div className="px-6 py-4">
               <div className="relative rounded-2xl rounded-tl-sm bg-ok-soft px-4 py-3 text-[14px] leading-6 text-fg">
                 {order.rawMessage}
-                <div className="mt-1 text-right text-[11px] text-muted">{dateTime(order.createdAt)}</div>
+                <div className="mt-1 text-right text-xs text-muted">{dateTime(order.createdAt)}</div>
               </div>
               <dl className="mt-4 grid grid-cols-2 gap-3 text-[13px]">
                 <div>
@@ -162,11 +158,11 @@ async function Order({ params }: { params: Promise<{ id: string }> }) {
           </Card>
 
           {alerts.length > 0 && (
-            <Card className="border-bad/30">
-              <CardHeader icon={<AlertIcon />} title="Stock alerts from this order" description="Free stock left after reserving, against supplier lead time." />
+            <Card>
+              <CardHeader icon={<AlertIcon />} tone="bad" title="Stock alerts from this order" description="Free stock left after reserving, against supplier lead time." />
               <ul className="divide-y divide-line">
                 {alerts.map((f) => (
-                  <li key={f.row.variantId} className="px-5 py-3 text-xs">
+                  <li key={f.row.variantId} className="px-6 py-3 text-xs">
                     <div className="mb-1 flex items-center justify-between gap-2">
                       <Link href={`/inventory/${f.row.sku}`} className="text-[13px] font-medium hover:underline"><Mono>{f.row.sku}</Mono></Link>
                       <SeverityBadge severity={f.severity} />
@@ -181,18 +177,18 @@ async function Order({ params }: { params: Promise<{ id: string }> }) {
           {open && (
             <Card>
               <CardHeader title="Cancel" description={`Puts ${plural(order.reservedUnits, "reserved piece")} back on sale with release rows in the ledger.`} />
-              <div className="p-5">
+              <div className="px-6 py-4">
                 <ActionForm action={cancelOrderAction} hidden={{ orderId: order.id }} confirm="Cancel this order and release its stock?">
                   <SubmitButton variant="danger" size="sm" pendingText="Cancelling…">Cancel order</SubmitButton>
                 </ActionForm>
               </div>
             </Card>
           )}
-          {!open && <Badge tone="neutral">This order is closed; its rows stay in the ledger.</Badge>}
+          {!open && <Card className="px-6 py-4 txt-small text-muted">This order is closed; its rows stay in the ledger.</Card>}
         </div>
       </div>
 
-      <Card className="mt-6">
+      <Card className="mt-3">
         <CardHeader
           icon={<ScrollIcon />}
           title="Ledger rows for this order"

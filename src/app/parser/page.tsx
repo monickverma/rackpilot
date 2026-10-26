@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CheckIcon, FlaskIcon, XIcon } from "@/components/icons";
+import { CheckIcon, ChevronRightIcon, FlaskIcon, XIcon } from "@/components/icons";
 import { ParserPlayground } from "@/components/parser-playground";
 import { Badge, Card, CardHeader, PageHeader, Stat, Table, Td, Th } from "@/components/ui";
 import { evaluate, pct, type TestCase } from "@/lib/parser/evaluate";
@@ -20,7 +20,6 @@ export default function ParserPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Parser accuracy"
         title="How well the rules read WhatsApp orders"
         description="50 hand-labelled messages (39 Hinglish, 11 English). A message only counts as correct if every line's product, colour, size and quantity and the due date all match exactly."
       />
@@ -32,7 +31,7 @@ export default function ParserPage() {
         <Stat label="Line items" value={`${recall}%`} sub={`recall · ${precision}% precision · due ${s.due.passed}/${s.due.total}`} />
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-5">
+      <div className="mt-3 grid gap-3 lg:grid-cols-5">
         <Card className="lg:col-span-3">
           <CardHeader icon={<FlaskIcon />} title="Try it" description="The same parser, running in your browser." />
           <ParserPlayground
@@ -46,7 +45,7 @@ export default function ParserPage() {
         </Card>
         <Card className="lg:col-span-2">
           <CardHeader title="How it was measured" />
-          <div className="space-y-3 p-5 text-[13px] leading-6 text-muted">
+          <div className="space-y-3 px-6 py-4 txt-small text-muted">
             <p>
               The labelled messages were written before the rules. {s.dev.total} are a <span className="text-fg">dev</span> set the rules were built against ({s.dev.passed}/{s.dev.total} now pass), and{" "}
               {s.holdout.total} were kept aside as a <span className="text-fg">holdout</span>.
@@ -59,12 +58,12 @@ export default function ParserPage() {
         </Card>
       </div>
 
-      <Card className="mt-6">
+      <Card className="mt-3">
         <CardHeader title={`Failures (${failures.length})`} description="Expected vs what the rules produced." />
         {failures.length ? (
           <ul className="divide-y divide-line">
             {failures.map((r) => (
-              <li key={r.id} className="px-5 py-3.5 text-[13px]">
+              <li key={r.id} className="px-6 py-3.5 text-[13px]">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-mono text-xs text-muted">{r.id}</span>
                   <Badge tone={r.split === "holdout" ? "accent" : "neutral"}>{r.split}</Badge>
@@ -79,13 +78,16 @@ export default function ParserPage() {
             ))}
           </ul>
         ) : (
-          <p className="px-5 py-6 text-sm text-muted">None.</p>
+          <p className="px-6 py-6 txt-small text-muted">None.</p>
         )}
       </Card>
 
-      <Card className="mt-6">
-        <details>
-          <summary className="cursor-pointer select-none px-5 py-4 text-sm font-semibold">All {results.length} messages</summary>
+      <Card className="mt-3">
+        <details className="group">
+          <summary className="flex cursor-pointer select-none list-none items-center gap-2 px-6 py-4 h2-core group-open:border-b group-open:border-line [&::-webkit-details-marker]:hidden">
+            <ChevronRightIcon size={15} className="text-faint transition-transform group-open:rotate-90" />
+            All {results.length} messages
+          </summary>
           <Table>
             <thead>
               <tr>

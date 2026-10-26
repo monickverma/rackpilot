@@ -6,6 +6,7 @@
 // reorders every Monday in the supplier's size-set packs. Every change is a
 // stock_movements row, so on-hand and reserved always equal the ledger sums.
 
+import { orderCode } from "../format.ts";
 import { resolveDue } from "../parser/due.ts";
 import { CUSTOMERS, PRODUCTS, SHOP, SUPPLIERS, type ProductDef, type Profile } from "./catalog.ts";
 
@@ -228,7 +229,7 @@ export function generateSeed(now: Date = new Date(), seed = 20261026): SeedData 
 
   const createOrder = (when: Date, customer: string, picks: { v: SimVariant; qty: number }[], message?: string, closer?: [string | null, string]) => {
     const id = orders.length + 1;
-    const code = `ORD-${1000 + id}`;
+    const code = orderCode(id);
     const [dueLabel, closerText] = closer ?? pick(CLOSERS);
     const phrases = describe(picks.map((p) => ({ def: p.v.def, colour: p.v.row.colour, size: p.v.row.size, qty: p.qty })), rng);
     const text = message ?? `${pick(GREETINGS)} ${phrases.join(rng() < 0.5 ? ", " : " aur ")}${closerText}`.trim();

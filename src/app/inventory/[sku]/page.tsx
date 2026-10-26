@@ -8,7 +8,7 @@ import { ActionForm, SubmitButton } from "@/components/action-form";
 import { AlertIcon, HourglassIcon, ScrollIcon } from "@/components/icons";
 import { MovementTable } from "@/components/movement-table";
 import { SeverityBadge } from "@/components/status";
-import { Card, CardHeader, CardSkeleton, cn, inputClass, Location, Mono, PageHeader, Stat, Swatch } from "@/components/ui";
+import { Card, CardHeader, CardSkeleton, cn, IconBadge, inputClass, Location, Mono, PageHeader, Stat, Swatch } from "@/components/ui";
 import { colourDot, dueDay, rupees } from "@/lib/format";
 import { holdsOn, insights, siblings, stockCard, variantBySku } from "@/lib/inventory";
 
@@ -43,14 +43,10 @@ async function Variant({ params }: { params: Promise<{ sku: string }> }) {
   return (
     <>
       <PageHeader
-        eyebrow={
-          <span className="flex items-center gap-1.5">
-            <Link href="/inventory" className="hover:text-fg">Inventory</Link> / <Mono>{v.sku}</Mono>
-          </span>
-        }
         title={v.productName}
         description={
-          <span className="flex flex-wrap items-center gap-3">
+          <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <Mono className="text-fg">{v.sku}</Mono>
             <Swatch colour={v.colour} hex={colourDot(v.colour)} />
             <span>{v.size === "FREE" ? "Free size" : `Size ${v.size}`}</span>
             <Location code={v.location} />
@@ -68,9 +64,9 @@ async function Variant({ params }: { params: Promise<{ sku: string }> }) {
       </div>
 
       {(low || dead) && (
-        <Card className={cn("mt-6", low ? "border-bad/30" : "border-warn/30")}>
-          <div className="flex gap-3 p-5 text-[13px]">
-            {low ? <AlertIcon size={18} className="shrink-0 text-bad" /> : <HourglassIcon size={18} className="shrink-0 text-warn" />}
+        <Card className="mt-3">
+          <div className="flex gap-3 px-6 py-4">
+            <IconBadge tone={low ? "bad" : "warn"}>{low ? <AlertIcon /> : <HourglassIcon />}</IconBadge>
             <div>
               <div className="mb-1 flex items-center gap-2 font-medium">
                 {low ? <>Low stock <SeverityBadge severity={low.severity} /></> : "Dead stock"}
@@ -81,13 +77,13 @@ async function Variant({ params }: { params: Promise<{ sku: string }> }) {
         </Card>
       )}
 
-      <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         <Card>
           <CardHeader title="Held for open orders" />
           {holds.length ? (
             <ul className="divide-y divide-line">
               {holds.map((h) => (
-                <li key={h.lineId} className="flex items-center justify-between gap-2 px-5 py-2.5 text-[13px]">
+                <li key={h.lineId} className="flex items-center justify-between gap-2 px-6 py-2.5 text-[13px]">
                   <Link href={`/orders/${h.orderId}`} className="hover:underline">
                     <Mono>{h.orderCode}</Mono> · {h.customerName}
                   </Link>
@@ -98,18 +94,18 @@ async function Variant({ params }: { params: Promise<{ sku: string }> }) {
               ))}
             </ul>
           ) : (
-            <p className="px-5 py-4 text-[13px] text-muted">Nothing reserved.</p>
+            <p className="px-6 py-4 text-[13px] text-muted">Nothing reserved.</p>
           )}
         </Card>
 
         <Card>
           <CardHeader title="Record a change" description="Each one adds a ledger row." />
-          <div className="space-y-5 p-5">
+          <div className="space-y-5 px-6 py-4">
             <ActionForm action={receiveAction} hidden={{ variantId: v.id }}>
               <div className="mb-1.5 text-[13px] font-medium">Receive delivery</div>
               <div className="flex gap-2">
                 <input name="qty" type="number" min={1} max={500} required placeholder="Qty" className={cn(inputClass, "w-20")} />
-                <input name="ref" placeholder="PO or bill no." maxLength={40} className={inputClass} />
+                <input name="ref" placeholder="PO or bill no." maxLength={40} className={cn(inputClass, "min-w-0 flex-1")} />
                 <SubmitButton size="md" pendingText="…">Add</SubmitButton>
               </div>
             </ActionForm>
@@ -117,7 +113,7 @@ async function Variant({ params }: { params: Promise<{ sku: string }> }) {
               <div className="mb-1.5 text-[13px] font-medium">Stock count</div>
               <div className="flex gap-2">
                 <input name="counted" type="number" min={0} max={5000} required placeholder={`${v.onHand}`} className={cn(inputClass, "w-20")} />
-                <input name="note" placeholder="Note (optional)" maxLength={120} className={inputClass} />
+                <input name="note" placeholder="Note (optional)" maxLength={120} className={cn(inputClass, "min-w-0 flex-1")} />
                 <SubmitButton size="md" pendingText="…">Set</SubmitButton>
               </div>
             </ActionForm>
@@ -134,7 +130,7 @@ async function Variant({ params }: { params: Promise<{ sku: string }> }) {
 
         <Card>
           <CardHeader title={`${v.productCode} sizes and colours`} description="Free stock per variant." />
-          <div className="overflow-x-auto p-4">
+          <div className="overflow-x-auto px-6 py-4">
             <table className="w-full text-center text-[12px]">
               <thead>
                 <tr className="text-muted">
@@ -158,7 +154,7 @@ async function Variant({ params }: { params: Promise<{ sku: string }> }) {
                             href={`/inventory/${f.sku}`}
                             className={cn(
                               "block rounded-md border py-1 tabular",
-                              f.id === v.id ? "border-accent bg-accent-soft font-semibold text-accent" : "border-line hover:border-line-strong",
+                              f.id === v.id ? "border-accent bg-accent-soft font-medium text-accent" : "border-line hover:border-line-strong",
                               n <= 0 && f.id !== v.id && "text-bad",
                             )}
                           >
@@ -175,14 +171,14 @@ async function Variant({ params }: { params: Promise<{ sku: string }> }) {
         </Card>
       </div>
 
-      <Card className="mt-6">
+      <Card className="mt-3">
         <CardHeader
           icon={<ScrollIcon />}
           title="Stock card"
           description={`Every movement for this SKU, newest first. "After" is on hand / reserved once the row applied; the top row equals the totals above.`}
         />
         <MovementTable rows={card.rows.slice(0, 150)} showSku={false} balances={card.balances} />
-        {card.rows.length > 150 && <p className="px-5 py-3 text-xs text-muted">Showing the latest 150 of {card.rows.length} rows.</p>}
+        {card.rows.length > 150 && <p className="border-t border-line px-6 py-3 text-xs text-muted">Showing the latest 150 of {card.rows.length} rows.</p>}
       </Card>
     </>
   );

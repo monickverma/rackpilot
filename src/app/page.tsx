@@ -3,7 +3,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { AlertIcon, ArrowRightIcon, CalendarIcon, ClipboardIcon, HourglassIcon, LeafIcon, MessagePlusIcon, ShieldCheckIcon, TrendingIcon, TruckIcon } from "@/components/icons";
 import { SeverityBadge } from "@/components/status";
-import { Badge, ButtonLink, Card, CardHeader, CardSkeleton, Empty, Location, Mono, PageHeader, Skeleton, Stat, Swatch, Table, Td, Th } from "@/components/ui";
+import { Badge, ButtonLink, Card, CardHeader, CardSkeleton, cn, Empty, IconBadge, Location, Mono, PageHeader, Skeleton, Stat, Swatch, Table, Td, Th } from "@/components/ui";
 import { WeeklyChart } from "@/components/weekly-chart";
 import { colourDot, dueDay, dueIn, plural, rupees, shortDay } from "@/lib/format";
 import { SEASONS } from "@/lib/insights";
@@ -14,7 +14,6 @@ export default function DashboardPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Rang Mahal Garments · Indore"
         title="Today at the shop"
         description="Open WhatsApp orders, stock that will run out before a delivery can arrive, and money sitting on the racks. Every number links to the ledger rows behind it."
         actions={
@@ -32,13 +31,16 @@ export default function DashboardPage() {
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[0, 1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-[104px]" />
+          <div key={i} className="h-[116px] rounded-lg bg-panel p-4 shadow-card">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="mt-4 h-7 w-16" />
+          </div>
         ))}
       </div>
-      <div className="grid gap-6 xl:grid-cols-3">
+      <div className="grid gap-3 xl:grid-cols-3">
         <div className="xl:col-span-2">
           <CardSkeleton rows={5} />
         </div>
@@ -74,7 +76,7 @@ async function Dashboard() {
   const healthy = check.ledgerMismatches.length === 0 && check.reservationMismatches.length === 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="Open orders" value={open.length} sub={`${plural(reservedUnits, "unit")} reserved${shortLines ? ` · ${plural(shortLines, "line")} short` : ""}`} href="/orders" icon={<ClipboardIcon />} tone="accent" />
         <Stat label="Low stock" value={ins.low.length} sub={`${out} out of stock`} href="#low-stock" icon={<AlertIcon />} tone={ins.low.length ? "bad" : "ok"} />
@@ -82,10 +84,11 @@ async function Dashboard() {
         <Stat label="Sold, last 30 days" value={units30.toLocaleString("en-IN")} sub={`${rupees(revenue30)} at list price`} href="/ledger?type=sale&days=30" icon={<TrendingIcon />} tone="ok" />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-3">
+      <div className="grid gap-3 xl:grid-cols-3">
         <Card id="low-stock" className="xl:col-span-2">
           <CardHeader
             icon={<AlertIcon />}
+            tone="bad"
             title="Will run out before a delivery"
             description="Free stock (on hand minus reserved) divided by the last 30 days' sales, against the supplier's lead time."
           />
@@ -103,7 +106,7 @@ async function Dashboard() {
               </thead>
               <tbody>
                 {ins.low.slice(0, 8).map((f) => (
-                  <tr key={f.row.variantId} className="hover:bg-panel-2/50">
+                  <tr key={f.row.variantId} className="hover:bg-panel-2">
                     <Td>
                       <Link href={`/inventory/${f.row.sku}`} className="font-medium hover:underline">
                         {f.row.productName}
@@ -117,7 +120,7 @@ async function Dashboard() {
                     <Td><Location code={f.row.location} /></Td>
                     <Td align="right">
                       {Math.max(f.available, 0)}
-                      {f.row.reserved > 0 && <div className="text-[11px] text-muted">{f.row.reserved} held</div>}
+                      {f.row.reserved > 0 && <div className="text-xs text-muted">{f.row.reserved} held</div>}
                     </Td>
                     <Td align="right">
                       <Link href={`/ledger?sku=${f.row.sku}&type=sale&days=30`} className="underline decoration-line-strong underline-offset-2 hover:decoration-fg">
@@ -126,7 +129,7 @@ async function Dashboard() {
                     </Td>
                     <Td align="right">
                       <span className="font-medium">{f.daysOfCover.toFixed(1)}d</span>
-                      <div className="text-[11px] text-muted">lead {f.row.leadTimeDays}d</div>
+                      <div className="text-xs text-muted">lead {f.row.leadTimeDays}d</div>
                     </Td>
                     <Td><SeverityBadge severity={f.severity} /></Td>
                   </tr>
@@ -137,13 +140,13 @@ async function Dashboard() {
             <Empty>Nothing will run out before the next delivery could arrive.</Empty>
           )}
           {ins.low.length > 8 && (
-            <div className="px-5 py-3 text-xs">
+            <div className="border-t border-line px-6 py-3 text-xs">
               <Link href="/inventory?flag=low" className="text-accent hover:underline">See all {ins.low.length} →</Link>
             </div>
           )}
         </Card>
 
-        <Card>
+        <Card className="xl:self-start">
           <CardHeader
             icon={<ClipboardIcon />}
             title="Open orders"
@@ -154,7 +157,7 @@ async function Dashboard() {
             <ul className="divide-y divide-line">
               {open.slice(0, 6).map((o) => (
                 <li key={o.id}>
-                  <Link href={`/orders/${o.id}`} className="block px-5 py-3 transition-colors hover:bg-panel-2/50">
+                  <Link href={`/orders/${o.id}`} className="block px-6 py-3 transition-colors hover:bg-panel-2">
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-[13px] font-medium">{o.customerName}</span>
                       <Mono className="text-muted">{o.code}</Mono>
@@ -179,7 +182,7 @@ async function Dashboard() {
         </Card>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-3">
+      <div className="grid gap-3 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader
             icon={<TruckIcon />}
@@ -189,14 +192,14 @@ async function Dashboard() {
           {ins.reorder.length ? (
             <ul className="divide-y divide-line">
               {ins.reorder.slice(0, 5).map((r) => (
-                <li key={`${r.productId}-${r.colour}`} className="px-5 py-3.5">
+                <li key={`${r.productId}-${r.colour}`} className="px-6 py-3.5">
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <div className="flex items-center gap-2 text-[13px]">
                       <span className="font-medium">{r.productName}</span>
                       <Swatch colour={r.colour} hex={colourDot(r.colour)} />
                     </div>
                     <div className="text-[13px] tabular">
-                      <span className="font-semibold">{plural(r.units, "pc", "pcs")}</span>
+                      <span className="font-medium">{plural(r.units, "pc", "pcs")}</span>
                       <span className="text-muted"> · {rupees(r.costEstimate)} at cost</span>
                     </div>
                   </div>
@@ -206,13 +209,13 @@ async function Dashboard() {
                         key={l.row.variantId}
                         href={`/inventory/${l.row.sku}`}
                         title={`${l.available} free, sold ${l.sold30} in 30 days`}
-                        className="inline-flex items-center gap-1 rounded-md border border-line px-1.5 py-0.5 text-[11px] tabular hover:border-line-strong"
+                        className="inline-flex h-5 items-center gap-1 rounded-md border border-tag-grey-line bg-tag-grey px-1.5 text-xs tabular transition-colors hover:border-line-strong"
                       >
                         <span className="text-muted">{l.row.size === "FREE" ? "FS" : l.row.size}</span>
                         <span className="font-medium">+{l.qty}</span>
                       </Link>
                     ))}
-                    <span className="text-[11px] text-muted">
+                    <span className="text-xs text-muted">
                       {r.supplierName} · {r.leadTimeDays}-day lead{r.packs ? ` · ${plural(r.packs, "pack")} of ${r.packRatio}` : ""}
                     </span>
                   </div>
@@ -226,14 +229,14 @@ async function Dashboard() {
         </Card>
 
         <Card id="dead-stock">
-          <CardHeader icon={<HourglassIcon />} title="Dead stock" description="On the rack 60+ days with no sale. Money tied up, at cost." />
+          <CardHeader icon={<HourglassIcon />} tone="warn" title="Dead stock" description="On the rack 60+ days with no sale. Money tied up, at cost." />
           {ins.deadGroups.length ? (
             <ul className="divide-y divide-line">
               {ins.deadGroups.slice(0, 6).map((g) => (
-                <li key={g.productId} className="px-5 py-3">
+                <li key={g.productId} className="px-6 py-3">
                   <div className="flex items-center justify-between gap-2 text-[13px]">
                     <Link href={`/inventory?q=${g.productCode}`} className="font-medium hover:underline">{g.productName}</Link>
-                    <span className="font-semibold tabular">{rupees(g.valueAtCost)}</span>
+                    <span className="font-medium tabular">{rupees(g.valueAtCost)}</span>
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted">
                     <Location code={g.location} />
@@ -248,7 +251,7 @@ async function Dashboard() {
             <Empty>Nothing has sat for 60 days.</Empty>
           )}
           {ins.holds.map((h) => (
-            <div key={h.productId} className="m-4 mt-0 flex gap-2.5 rounded-lg border border-line bg-panel-2 p-3 text-xs">
+            <div key={h.productId} className="mx-4 mb-4 flex gap-2.5 rounded-lg border border-line bg-subtle p-3 text-xs">
               <LeafIcon size={14} className="mt-0.5 shrink-0 text-ok" />
               <p>
                 <span className="font-medium">{h.seasonLabel} is over</span> (ended {shortDay(h.seasonEnded.getTime())}).{" "}
@@ -259,10 +262,10 @@ async function Dashboard() {
         </Card>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-3">
+      <div className="grid gap-3 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader icon={<TrendingIcon />} title="Units sold per week" description="Counter and WhatsApp sales from the ledger, last 26 weeks." />
-          <div className="px-5 pb-4 pt-5">
+          <div className="px-6 pb-4 pt-5">
             <WeeklyChart weeks={weeks} bands={bands} />
           </div>
         </Card>
@@ -270,14 +273,14 @@ async function Dashboard() {
           <CardHeader title="Best sellers" description="Last 30 days, by units." />
           <ol className="divide-y divide-line">
             {ins.best.slice(0, 6).map((b, i) => (
-              <li key={b.productId} className="flex items-start gap-3 px-5 py-2.5">
+              <li key={b.productId} className="flex items-start gap-3 px-6 py-2.5">
                 <span className="mt-0.5 w-4 text-xs text-faint tabular">{i + 1}</span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2 text-[13px]">
                     <Link href={`/inventory?q=${b.productCode}`} className="truncate font-medium hover:underline">{b.productName}</Link>
                     <span className="tabular">{b.units}</span>
                   </div>
-                  <div className="truncate text-[11px] text-muted">
+                  <div className="truncate text-xs text-muted">
                     {b.topVariants.map((t) => `${t.colour} ${t.size === "FREE" ? "FS" : t.size}`).join(" · ")}
                   </div>
                 </div>
@@ -289,9 +292,14 @@ async function Dashboard() {
 
       <Link
         href="/ledger"
-        className={`flex items-center gap-3 rounded-xl border px-5 py-3.5 text-[13px] transition-colors ${healthy ? "border-line bg-panel hover:border-line-strong" : "border-bad/40 bg-bad-soft"}`}
+        className={cn(
+          "flex items-center gap-3 rounded-lg px-6 py-4 outline-hidden transition-shadow focus-visible:shadow-active",
+          healthy ? "bg-panel shadow-card hover:shadow-card-hover" : "bg-bad-soft ring-1 ring-bad/40",
+        )}
       >
-        <ShieldCheckIcon size={18} className={healthy ? "text-ok" : "text-bad"} />
+        <IconBadge tone={healthy ? "ok" : "bad"}>
+          <ShieldCheckIcon />
+        </IconBadge>
         <span className="flex-1">
           {healthy ? (
             <>

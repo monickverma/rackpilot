@@ -18,7 +18,6 @@ export default function InventoryPage({ searchParams }: { searchParams: SP }) {
   return (
     <>
       <PageHeader
-        eyebrow="Inventory"
         title="Stock by rack"
         description="On hand is what is on the rack; reserved is held for open orders; free is what you can still sell. Click any SKU for its full stock card."
       />
@@ -66,33 +65,36 @@ async function Inventory({ searchParams }: { searchParams: SP }) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {racks.map((r) => (
           <Link
             key={r.rack}
             href={href({ rack: rack === r.rack ? "" : r.rack })}
-            className={cn("rounded-xl border bg-panel p-3 shadow-card transition-colors hover:border-line-strong", rack === r.rack ? "border-accent ring-2 ring-accent/15" : "border-line")}
+            className={cn(
+              "rounded-lg bg-panel p-3 outline-hidden transition-shadow focus-visible:shadow-active",
+              rack === r.rack ? "shadow-active" : "shadow-card hover:shadow-card-hover",
+            )}
           >
             <div className="flex items-center justify-between">
-              <span className="font-mono text-sm font-semibold">{r.rack}</span>
+              <span className="font-mono txt-compact-small-plus">{r.rack}</span>
               {r.flagged > 0 && <Badge tone="bad">{r.flagged} low</Badge>}
             </div>
-            <div className="mt-2 text-lg font-semibold">{r.units.toLocaleString("en-IN")}</div>
-            <div className="text-[11px] text-muted">pcs in {r.variants} SKUs</div>
-            <div className="mt-1 truncate text-[11px] text-faint">{r.products.join(", ")}</div>
+            <div className="mt-2 text-lg font-medium">{r.units.toLocaleString("en-IN")}</div>
+            <div className="text-xs text-muted">pcs in {r.variants} SKUs</div>
+            <div className="mt-1 truncate text-xs text-faint">{r.products.join(", ")}</div>
           </Link>
         ))}
       </div>
 
       <Card>
-        <Form action="/inventory" className="flex flex-wrap items-center gap-2 border-b border-line px-4 py-3">
+        <Form action="/inventory" className="flex flex-wrap items-center gap-2 border-b border-line px-6 py-3">
           {rack && <input type="hidden" name="rack" value={rack} />}
           <div className="relative min-w-52 flex-1">
-            <SearchIcon size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-faint" />
-            <input name="q" defaultValue={q} placeholder="Search SKU, product or colour" className={cn(inputClass, "pl-9")} />
+            <SearchIcon size={15} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-faint" />
+            <input name="q" defaultValue={q} placeholder="Search SKU, product or colour" className={cn(inputClass, "w-full pl-8")} />
           </div>
-          <select name="flag" defaultValue={flag} className={cn(inputClass, "w-auto")}>
+          <select name="flag" defaultValue={flag} className={inputClass}>
             <option value="">All stock</option>
             <option value="low">Low stock only</option>
             <option value="dead">Dead stock only</option>
@@ -124,7 +126,7 @@ async function Inventory({ searchParams }: { searchParams: SP }) {
                 const lf = low.get(r.variantId);
                 const df = dead.get(r.variantId);
                 return (
-                  <tr key={r.variantId} className="hover:bg-panel-2/50">
+                  <tr key={r.variantId} className="hover:bg-panel-2">
                     <Td><Location code={r.location} /></Td>
                     <Td><Link href={`/inventory/${r.sku}`} className="hover:underline"><Mono>{r.sku}</Mono></Link></Td>
                     <Td className="whitespace-nowrap">{r.productName}</Td>

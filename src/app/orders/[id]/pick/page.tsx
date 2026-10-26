@@ -30,13 +30,13 @@ async function Pick({ params }: { params: Promise<{ id: string }> }) {
   return (
     <div className="mx-auto max-w-3xl">
       <div className="no-print mb-4 flex items-center justify-between gap-3">
-        <Link href={`/orders/${order.id}`} className="text-[13px] text-muted hover:text-fg">← Back to {order.code}</Link>
+        <Link href={`/orders/${order.id}`} className="txt-compact-small-plus text-muted hover:text-fg">← Back to {order.code}</Link>
         <PrintButton />
       </div>
       <Card className="print-plain p-6 sm:p-8">
         <header className="flex flex-wrap items-start justify-between gap-4 border-b border-line pb-5">
           <div>
-            <div className="text-xs font-medium uppercase tracking-wide text-muted">Pick list · Rang Mahal Garments</div>
+            <div className="txt-compact-small-plus text-muted">Pick list · Rang Mahal Garments</div>
             <h1 className="mt-1 text-2xl font-semibold tracking-tight">{order.code} · {order.customerName}</h1>
             <p className="mt-1 text-[13px] text-muted">
               Ordered {dateTime(order.createdAt)}
@@ -52,7 +52,7 @@ async function Pick({ params }: { params: Promise<{ id: string }> }) {
         {items.length ? (
           <table className="mt-5 w-full text-left text-[14px]">
             <thead>
-              <tr className="text-[11px] uppercase tracking-wide text-muted">
+              <tr className="txt-compact-small-plus text-muted">
                 <th className="w-8 py-2" />
                 <th className="py-2 font-medium">Bin</th>
                 <th className="py-2 font-medium">Item</th>
@@ -64,7 +64,7 @@ async function Pick({ params }: { params: Promise<{ id: string }> }) {
               {racks.map((rack) => (
                 <Fragment key={rack}>
                   <tr>
-                    <td colSpan={5} className="pb-1 pt-4 text-xs font-semibold uppercase tracking-wide text-accent">Rack {rack.slice(1)}</td>
+                    <td colSpan={5} className="pb-1 pt-5 txt-compact-small-plus text-accent">Rack {rack.slice(1)}</td>
                   </tr>
                   {items.filter((i) => i.location.startsWith(`${rack}-`)).map((i) => (
                     <tr key={i.lineId} className="border-t border-line">
@@ -88,12 +88,12 @@ async function Pick({ params }: { params: Promise<{ id: string }> }) {
             </tbody>
           </table>
         ) : (
-          <p className="py-8 text-center text-sm text-muted">Nothing is reserved for this order, so there is nothing to pick.</p>
+          <p className="py-8 text-center txt-small text-muted">Nothing is reserved for this order, so there is nothing to pick.</p>
         )}
 
         {(missing.length > 0 || items.some((i) => i.shortBy > 0)) && (
-          <div className="mt-6 rounded-lg border border-bad/30 bg-bad-soft p-4 text-[13px]">
-            <div className="font-semibold text-bad">Not available. Tell the customer.</div>
+          <div className="mt-6 rounded-lg border border-tag-red-line bg-tag-red p-4 text-tag-red-fg">
+            <div className="font-medium">Not available. Tell the customer.</div>
             <ul className="mt-1.5 space-y-1">
               {items.filter((i) => i.shortBy > 0).map((i) => (
                 <li key={i.lineId}>{i.sku}: {i.shortBy} more asked than reserved</li>

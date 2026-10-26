@@ -50,7 +50,7 @@ export function WeeklyChart({ weeks, bands }: { weeks: Week[]; bands: Band[] }) 
       <div className="relative ml-9 h-44">
         {ticks.map((t) => (
           <div key={t} className="absolute inset-x-0 border-t border-line" style={{ bottom: `${(t / max) * 100}%` }}>
-            <span className="absolute -left-9 -translate-y-1/2 text-[11px] text-muted tabular">{t}</span>
+            <span className="absolute -left-9 -translate-y-1/2 text-xs text-muted tabular">{t}</span>
           </div>
         ))}
         {bandSpans.map((b) => (
@@ -59,7 +59,7 @@ export function WeeklyChart({ weeks, bands }: { weeks: Week[]; bands: Band[] }) 
             className="absolute inset-y-0 rounded-md bg-chart-band"
             style={{ left: `${(b.first / n) * 100}%`, width: `${((b.last - b.first + 1) / n) * 100}%` }}
           >
-            <span className="absolute left-1.5 top-1 text-[11px] font-medium text-muted">{b.label}</span>
+            <span className="absolute left-1.5 top-1 text-xs font-medium text-muted">{b.label}</span>
           </div>
         ))}
         <div className="absolute inset-0 flex items-end">
@@ -80,16 +80,16 @@ export function WeeklyChart({ weeks, bands }: { weeks: Week[]; bands: Band[] }) 
                 style={{ height: `${Math.max((w.units / max) * 100, w.units ? 1.5 : 0)}%` }}
               />
               {i === peak && hover === null && (
-                <span className="pointer-events-none absolute text-[11px] font-medium tabular" style={{ bottom: `calc(${(w.units / max) * 100}% + 4px)` }}>
+                <span className="pointer-events-none absolute text-xs font-medium tabular" style={{ bottom: `calc(${(w.units / max) * 100}% + 4px)` }}>
                   {w.units}
                 </span>
               )}
               {hover === i && (
                 <div
-                  className="pointer-events-none absolute z-10 w-max rounded-lg border border-line bg-panel px-2.5 py-1.5 text-xs shadow-lg"
+                  className="pointer-events-none absolute z-10 w-max rounded-lg bg-panel px-2.5 py-1.5 text-xs shadow-flyout"
                   style={{ bottom: `calc(${(w.units / max) * 100}% + 8px)`, ...(i > n - 5 ? { right: 0 } : i < 4 ? { left: 0 } : {}) }}
                 >
-                  <div className="text-sm font-semibold tabular">{w.units} units</div>
+                  <div className="txt-compact-small-plus tabular">{w.units} units</div>
                   <div className="text-muted tabular">{rupees(w.revenue)}</div>
                   <div className="text-muted">
                     {dayFmt.format(w.start)} – {dayFmt.format(w.end - DAY)}
@@ -100,7 +100,7 @@ export function WeeklyChart({ weeks, bands }: { weeks: Week[]; bands: Band[] }) 
           ))}
         </div>
       </div>
-      <div className="ml-9 mt-1.5 flex text-[11px] text-muted">
+      <div className="ml-9 mt-1.5 flex text-xs text-muted">
         {weeks.map((w, i) => {
           const month = monthFmt.format(w.start);
           const show = i === 0 || monthFmt.format(weeks[i - 1].start) !== month;

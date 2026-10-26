@@ -31,7 +31,7 @@ export function MovementTable({ rows, showSku = true, showOrder = true, balances
         {rows.map((m) => {
           const after = balances?.get(m.id);
           return (
-            <tr key={m.id} id={`m${m.id}`} className="hover:bg-panel-2/50 target:bg-accent-soft">
+            <tr key={m.id} id={`m${m.id}`} className="hover:bg-panel-2 target:bg-accent-soft">
               <Td className="text-faint tabular">{m.id}</Td>
               <Td className="whitespace-nowrap text-muted">{dateTime(m.createdAt)}</Td>
               <Td><MovementBadge type={m.type} /></Td>

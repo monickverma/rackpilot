@@ -6,16 +6,16 @@ import type { Token, TokenKind } from "@/lib/parser/types";
 import { cn } from "./ui";
 
 export const TOKEN_STYLE: Partial<Record<TokenKind, string>> = {
-  qty: "bg-accent-soft text-accent font-semibold",
-  each: "bg-accent-soft text-accent",
-  product: "bg-ok-soft text-ok font-medium",
-  colour: "bg-info-soft text-info font-medium",
-  size: "bg-panel-2 text-fg font-semibold ring-1 ring-inset ring-line-strong",
+  qty: "bg-tag-blue text-tag-blue-fg font-semibold",
+  each: "bg-tag-blue text-tag-blue-fg",
+  product: "bg-tag-green text-tag-green-fg font-medium",
+  colour: "bg-tag-purple text-tag-purple-fg font-medium",
+  size: "bg-tag-grey text-fg font-semibold ring-1 ring-inset ring-line-strong",
   descriptor: "text-fg underline decoration-dotted decoration-2 underline-offset-4",
-  code: "bg-panel-2 text-fg font-mono",
-  price: "bg-panel-2 text-fg",
-  due: "bg-warn-soft text-warn font-medium",
-  urgent: "bg-bad-soft text-bad font-medium",
+  code: "bg-tag-grey text-fg font-mono",
+  price: "bg-tag-grey text-fg",
+  due: "bg-tag-orange text-tag-orange-fg font-medium",
+  urgent: "bg-tag-red text-tag-red-fg font-medium",
   unknown: "text-bad underline decoration-wavy decoration-bad/70 underline-offset-4",
   filler: "text-muted",
   sep: "text-muted",
@@ -33,12 +33,12 @@ export function Highlighted({ message, tokens }: { message: string; tokens: Toke
     if (t.start < at) continue;
     if (t.start > at) out.push(message.slice(at, t.start));
     out.push(
-      <span key={t.start} title={t.kind} className={cn("rounded px-0.5 py-px", TOKEN_STYLE[t.kind])}>
+      <span key={t.start} title={t.kind} className={cn("rounded-[4px] px-0.5 py-px", TOKEN_STYLE[t.kind])}>
         {message.slice(t.start, t.end)}
       </span>,
     );
     at = t.end;
   }
   if (at < message.length) out.push(message.slice(at));
-  return <p className="whitespace-pre-wrap text-[15px] leading-8">{out}</p>;
+  return <p className="whitespace-pre-wrap text-[14px] leading-8">{out}</p>;
 }

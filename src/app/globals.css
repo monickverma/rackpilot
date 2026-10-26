@@ -1,72 +1,191 @@
 @import "tailwindcss";
 
-/* Design tokens. Neutral zinc surfaces, one indigo accent, status hues for stock.
-   Light by default; dark follows the OS. */
+/* Design tokens taken from Medusa's admin (Medusa UI, MIT licence): zinc
+   surfaces, white containers lifted by a hairline shadow, one blue for links
+   and focus, and tag colours for status. Light is the default. Dark applies
+   only when the reader picks it, which sets data-theme="dark" on <html>. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 :root {
-  --bg: oklch(0.985 0.002 286);
-  --panel: oklch(1 0 0);
-  --panel-2: oklch(0.975 0.003 286);
-  --line: oklch(0.92 0.004 286);
-  --line-strong: oklch(0.86 0.006 286);
-  --fg: oklch(0.21 0.006 286);
-  --muted: oklch(0.52 0.014 286);
-  --faint: oklch(0.68 0.01 286);
-  --accent: oklch(0.51 0.21 277);
-  --accent-fg: oklch(0.99 0 0);
-  --accent-soft: oklch(0.95 0.035 277);
-  --ok: oklch(0.55 0.14 155);
-  --ok-soft: oklch(0.96 0.04 155);
-  --warn: oklch(0.6 0.15 65);
-  --warn-soft: oklch(0.96 0.05 80);
-  --bad: oklch(0.56 0.2 22);
-  --bad-soft: oklch(0.96 0.03 22);
-  --info: oklch(0.56 0.13 240);
-  --info-soft: oklch(0.96 0.03 240);
-  --shadow: 0 1px 2px oklch(0.2 0.01 286 / 0.06), 0 1px 1px oklch(0.2 0.01 286 / 0.03);
-  /* Chart marks: validated with the dataviz palette checker for each surface. */
-  --chart: #4f46e5;
-  --chart-band: oklch(0.96 0.025 80);
+  /* Surfaces */
+  --bg: #fafafa;
+  --bg-hover: #f4f4f5;
+  --panel: #ffffff;
+  --panel-2: #f4f4f5;
+  --subtle: #fafafa;
+  --field: #fafafa;
+  --field-hover: #f4f4f5;
+  --button: #ffffff;
+  --button-hover: #f4f4f5;
+  --ghost-hover: #f4f4f5;
+  --overlay: rgb(24 24 27 / 0.4);
+  --line: #e4e4e7;
+  --line-strong: #d4d4d8;
+
+  /* Text */
+  --fg: #18181b;
+  --muted: #52525b;
+  --faint: #71717a;
+  --disabled: #a1a1aa;
+  --accent: #2563eb;
+  --accent-fg: #ffffff;
+  --accent-soft: #eff6ff;
+  --inverted: #27272a;
+  --inverted-hover: #3f3f46;
+  --inverted-fg: #ffffff;
+
+  /* Inline status text and tinted surfaces */
+  --ok: #047857;
+  --ok-soft: #d1fae5;
+  --warn: #c2410c;
+  --warn-soft: #ffedd5;
+  --bad: #e11d48;
+  --bad-soft: #ffe4e6;
+  --info: #6d28d9;
+  --info-soft: #ede9fe;
+
+  /* Tag colours for badges: fill, text, border, status dot */
+  --tag-grey: #f4f4f5;
+  --tag-grey-fg: #52525b;
+  --tag-grey-line: #e4e4e7;
+  --tag-grey-dot: #a1a1aa;
+  --tag-blue: #dbeafe;
+  --tag-blue-fg: #1e40af;
+  --tag-blue-line: #bfdbfe;
+  --tag-blue-dot: #60a5fa;
+  --tag-green: #d1fae5;
+  --tag-green-fg: #065f46;
+  --tag-green-line: #a7f3d0;
+  --tag-green-dot: #10b981;
+  --tag-orange: #ffedd5;
+  --tag-orange-fg: #9a3412;
+  --tag-orange-line: #fed7aa;
+  --tag-orange-dot: #f97316;
+  --tag-red: #ffe4e6;
+  --tag-red-fg: #9f1239;
+  --tag-red-line: #fecdd3;
+  --tag-red-dot: #f43f5e;
+  --tag-purple: #ede9fe;
+  --tag-purple-fg: #5b21b6;
+  --tag-purple-line: #ddd6fe;
+  --tag-purple-dot: #a78bfa;
+
+  /* Elevation */
+  --elevation-card: 0 0 0 1px rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.08), 0 2px 4px 0 rgb(0 0 0 / 0.04);
+  --elevation-card-hover: 0 0 0 1px rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.08), 0 2px 8px 0 rgb(0 0 0 / 0.1);
+  --elevation-flyout: 0 0 0 1px rgb(0 0 0 / 0.08), 0 4px 8px 0 rgb(0 0 0 / 0.08), 0 8px 16px 0 rgb(0 0 0 / 0.08);
+  --elevation-modal: inset 0 0 0 1px #fff, inset 0 0 0 1.5px rgb(228 228 231 / 0.6), 0 0 0 1px rgb(0 0 0 / 0.08), 0 8px 16px 0 rgb(0 0 0 / 0.08), 0 16px 32px 0 rgb(0 0 0 / 0.08);
+  --buttons-neutral: 0 1px 2px 0 rgb(0 0 0 / 0.12), 0 0 0 1px rgb(0 0 0 / 0.08);
+  --buttons-neutral-focus: 0 1px 2px 0 rgb(0 0 0 / 0.12), 0 0 0 1px rgb(0 0 0 / 0.08), 0 0 0 2px #fff, 0 0 0 4px rgb(59 130 246 / 0.6);
+  --buttons-inverted: inset 0 0.75px 0 0 rgb(255 255 255 / 0.2), 0 1px 2px 0 rgb(0 0 0 / 0.4), 0 0 0 1px #18181b;
+  --buttons-inverted-focus: inset 0 0.75px 0 0 rgb(255 255 255 / 0.2), 0 1px 2px 0 rgb(0 0 0 / 0.4), 0 0 0 1px #18181b, 0 0 0 2px #fff, 0 0 0 4px rgb(59 130 246 / 0.6);
+  --borders-active: 0 0 0 4px rgb(37 99 235 / 0.2), 0 0 0 1px #2563eb;
+  --focus-ring: 0 0 0 2px #fff, 0 0 0 4px rgb(59 130 246 / 0.6);
+
+  /* Chart marks, checked with the dataviz palette validator on each surface */
+  --chart: #3b82f6;
+  --chart-band: #fff7ed;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: oklch(0.16 0.004 286);
-    --panel: oklch(0.195 0.005 286);
-    --panel-2: oklch(0.225 0.006 286);
-    --line: oklch(0.28 0.007 286);
-    --line-strong: oklch(0.34 0.008 286);
-    --fg: oklch(0.96 0.003 286);
-    --muted: oklch(0.7 0.012 286);
-    --faint: oklch(0.55 0.012 286);
-    --accent: oklch(0.66 0.17 277);
-    --accent-fg: oklch(0.16 0.01 277);
-    --accent-soft: oklch(0.3 0.07 277);
-    --ok: oklch(0.74 0.14 155);
-    --ok-soft: oklch(0.29 0.05 155);
-    --warn: oklch(0.8 0.14 75);
-    --warn-soft: oklch(0.31 0.06 70);
-    --bad: oklch(0.72 0.17 22);
-    --bad-soft: oklch(0.3 0.07 22);
-    --info: oklch(0.75 0.11 240);
-    --info-soft: oklch(0.3 0.05 240);
-    --shadow: 0 1px 2px oklch(0 0 0 / 0.4);
-    --chart: #6366f1;
-    --chart-band: oklch(0.27 0.03 80);
-  }
+:root[data-theme="dark"] {
+  --bg: #18181b;
+  --bg-hover: #212124;
+  --panel: #212124;
+  --panel-2: #27272a;
+  --subtle: #1c1c1f;
+  --field: rgb(255 255 255 / 0.04);
+  --field-hover: rgb(255 255 255 / 0.08);
+  --button: rgb(255 255 255 / 0.04);
+  --button-hover: rgb(255 255 255 / 0.08);
+  --ghost-hover: rgb(255 255 255 / 0.08);
+  --overlay: rgb(24 24 27 / 0.72);
+  --line: rgb(255 255 255 / 0.08);
+  --line-strong: rgb(255 255 255 / 0.16);
+
+  --fg: #f4f4f5;
+  --muted: #a1a1aa;
+  --faint: #8b8b94;
+  --disabled: #52525b;
+  --accent: #60a5fa;
+  --accent-fg: #18181b;
+  --accent-soft: #172554;
+  --inverted: #52525b;
+  --inverted-hover: #71717a;
+  --inverted-fg: rgb(255 255 255 / 0.92);
+
+  --ok: #34d399;
+  --ok-soft: #022c22;
+  --warn: #fb923c;
+  --warn-soft: #431407;
+  --bad: #fb7185;
+  --bad-soft: #4c0519;
+  --info: #a78bfa;
+  --info-soft: #2e1065;
+
+  --tag-grey: rgb(255 255 255 / 0.08);
+  --tag-grey-fg: #d4d4d8;
+  --tag-grey-line: rgb(255 255 255 / 0.06);
+  --tag-grey-dot: #71717a;
+  --tag-blue: #172554;
+  --tag-blue-fg: #93c5fd;
+  --tag-blue-line: #1e3a8a;
+  --tag-blue-dot: #60a5fa;
+  --tag-green: #022c22;
+  --tag-green-fg: #34d399;
+  --tag-green-line: #064e3b;
+  --tag-green-dot: #10b981;
+  --tag-orange: #431407;
+  --tag-orange-fg: #fdba74;
+  --tag-orange-line: #7c2d12;
+  --tag-orange-dot: #fb923c;
+  --tag-red: #4c0519;
+  --tag-red-fg: #fda4af;
+  --tag-red-line: #881337;
+  --tag-red-dot: #fb7185;
+  --tag-purple: #2e1065;
+  --tag-purple-fg: #c4b5fd;
+  --tag-purple-line: #5b21b6;
+  --tag-purple-dot: #a78bfa;
+
+  --elevation-card: 0 -1px 0 0 rgb(255 255 255 / 0.06), 0 0 0 1px rgb(255 255 255 / 0.06), 0 0 0 1px #27272a, 0 1px 2px 0 rgb(0 0 0 / 0.32), 0 2px 4px 0 rgb(0 0 0 / 0.32);
+  --elevation-card-hover: 0 -1px 0 0 rgb(255 255 255 / 0.06), 0 0 0 1px rgb(255 255 255 / 0.06), 0 0 0 1px #27272a, 0 1px 4px 0 rgb(0 0 0 / 0.48), 0 2px 8px 0 rgb(0 0 0 / 0.48);
+  --elevation-flyout: 0 -1px 0 0 rgb(255 255 255 / 0.04), 0 0 0 1px rgb(255 255 255 / 0.1), 0 4px 8px 0 rgb(0 0 0 / 0.32), 0 8px 16px 0 rgb(0 0 0 / 0.32);
+  --elevation-modal: inset 0 0 0 1px #18181b, inset 0 0 0 1.5px rgb(255 255 255 / 0.06), 0 -1px 0 0 rgb(255 255 255 / 0.04), 0 0 0 1px rgb(255 255 255 / 0.1), 0 4px 8px 0 rgb(0 0 0 / 0.32), 0 8px 16px 0 rgb(0 0 0 / 0.32);
+  --buttons-neutral: 0 -1px 0 0 rgb(255 255 255 / 0.06), 0 0 0 1px rgb(255 255 255 / 0.06), 0 0 0 1px #27272a, 0 0 1px 1.5px rgb(0 0 0 / 0.24), 0 2px 2px 0 rgb(0 0 0 / 0.24);
+  --buttons-neutral-focus: 0 -1px 0 0 rgb(255 255 255 / 0.06), 0 0 0 1px rgb(255 255 255 / 0.06), 0 0 0 1px #27272a, 0 0 0 2px #18181b, 0 0 0 4px rgb(96 165 250 / 0.8);
+  --buttons-inverted: 0 -1px 0 0 rgb(255 255 255 / 0.12), 0 0 0 1px rgb(255 255 255 / 0.1), 0 0 0 1px #52525b, 0 0 1px 1.5px rgb(0 0 0 / 0.24), 0 2px 2px 0 rgb(0 0 0 / 0.24);
+  --buttons-inverted-focus: 0 -1px 0 0 rgb(255 255 255 / 0.12), 0 0 0 1px rgb(255 255 255 / 0.12), 0 0 0 1px #52525b, 0 0 0 2px #18181b, 0 0 0 4px rgb(96 165 250 / 0.8);
+  --borders-active: 0 0 0 1px #60a5fa, 0 0 0 4px rgb(59 130 246 / 0.25);
+  --focus-ring: 0 0 0 2px #18181b, 0 0 0 4px rgb(96 165 250 / 0.8);
+
+  --chart: #4f8ff7;
+  --chart-band: rgb(251 146 60 / 0.1);
 }
 
 @theme inline {
   --color-bg: var(--bg);
+  --color-bg-hover: var(--bg-hover);
   --color-panel: var(--panel);
   --color-panel-2: var(--panel-2);
+  --color-subtle: var(--subtle);
+  --color-field: var(--field);
+  --color-field-hover: var(--field-hover);
+  --color-button: var(--button);
+  --color-button-hover: var(--button-hover);
+  --color-ghost-hover: var(--ghost-hover);
+  --color-overlay: var(--overlay);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
   --color-fg: var(--fg);
   --color-muted: var(--muted);
   --color-faint: var(--faint);
+  --color-disabled: var(--disabled);
   --color-accent: var(--accent);
   --color-accent-fg: var(--accent-fg);
   --color-accent-soft: var(--accent-soft);
+  --color-inverted: var(--inverted);
+  --color-inverted-hover: var(--inverted-hover);
+  --color-inverted-fg: var(--inverted-fg);
   --color-ok: var(--ok);
   --color-ok-soft: var(--ok-soft);
   --color-warn: var(--warn);
@@ -75,29 +194,113 @@
   --color-bad-soft: var(--bad-soft);
   --color-info: var(--info);
   --color-info-soft: var(--info-soft);
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --shadow-card: var(--shadow);
+  --color-tag-grey: var(--tag-grey);
+  --color-tag-grey-fg: var(--tag-grey-fg);
+  --color-tag-grey-line: var(--tag-grey-line);
+  --color-tag-grey-dot: var(--tag-grey-dot);
+  --color-tag-blue: var(--tag-blue);
+  --color-tag-blue-fg: var(--tag-blue-fg);
+  --color-tag-blue-line: var(--tag-blue-line);
+  --color-tag-blue-dot: var(--tag-blue-dot);
+  --color-tag-green: var(--tag-green);
+  --color-tag-green-fg: var(--tag-green-fg);
+  --color-tag-green-line: var(--tag-green-line);
+  --color-tag-green-dot: var(--tag-green-dot);
+  --color-tag-orange: var(--tag-orange);
+  --color-tag-orange-fg: var(--tag-orange-fg);
+  --color-tag-orange-line: var(--tag-orange-line);
+  --color-tag-orange-dot: var(--tag-orange-dot);
+  --color-tag-red: var(--tag-red);
+  --color-tag-red-fg: var(--tag-red-fg);
+  --color-tag-red-line: var(--tag-red-line);
+  --color-tag-red-dot: var(--tag-red-dot);
+  --color-tag-purple: var(--tag-purple);
+  --color-tag-purple-fg: var(--tag-purple-fg);
+  --color-tag-purple-line: var(--tag-purple-line);
+  --color-tag-purple-dot: var(--tag-purple-dot);
   --color-chart: var(--chart);
   --color-chart-band: var(--chart-band);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-roboto-mono), ui-monospace, monospace;
+  --shadow-card: var(--elevation-card);
+  --shadow-card-hover: var(--elevation-card-hover);
+  --shadow-flyout: var(--elevation-flyout);
+  --shadow-modal: var(--elevation-modal);
+  --shadow-button: var(--buttons-neutral);
+  --shadow-button-focus: var(--buttons-neutral-focus);
+  --shadow-inverted: var(--buttons-inverted);
+  --shadow-inverted-focus: var(--buttons-inverted-focus);
+  --shadow-active: var(--borders-active);
+  --shadow-focus: var(--focus-ring);
 }
 
-html {
-  color-scheme: light dark;
+/* Medusa's type scale. "Compact" styles are for single lines. */
+@utility txt-compact-xsmall {
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 400;
+}
+@utility txt-compact-xsmall-plus {
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 500;
+}
+@utility txt-compact-small {
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 400;
+}
+@utility txt-compact-small-plus {
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+}
+@utility txt-small {
+  font-size: 13px;
+  line-height: 21px;
+  font-weight: 400;
+}
+@utility h1-core {
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 500;
+}
+@utility h2-core {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+}
+@utility h3-core {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
 }
 
-body {
-  background: var(--bg);
-  color: var(--fg);
-  font-feature-settings: "cv11", "ss01";
-}
-
-::selection {
-  background: var(--accent-soft);
-}
-
-.tabular {
+@utility tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/* In the base layer so component utilities (outline-hidden, shadows) win. */
+@layer base {
+  html {
+    color-scheme: light;
+  }
+  html[data-theme="dark"] {
+    color-scheme: dark;
+  }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-size: 13px;
+    line-height: 20px;
+  }
+  :focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--tag-blue);
+  }
 }
 
 /* Pick lists print on plain paper: drop the app chrome. */

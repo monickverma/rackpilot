@@ -14,17 +14,22 @@ export function ParserPlayground({ examples }: { examples: string[] }) {
   const deferred = useDeferredValue(text);
   const result = parseOrder(deferred);
   return (
-    <div className="space-y-4 p-5">
-      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={2} maxLength={2000} className={cn(inputClass, "h-auto py-2 leading-6")} />
+    <div className="space-y-4 px-6 py-4">
+      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={2} maxLength={2000} className={cn(inputClass, "h-auto w-full py-2 leading-6")} />
       <div className="flex flex-wrap gap-1.5">
         {examples.map((e) => (
-          <button key={e} type="button" onClick={() => setText(e)} className="max-w-60 truncate rounded-md border border-line px-2 py-0.5 text-[11px] text-muted hover:border-line-strong hover:text-fg">
+          <button
+            key={e}
+            type="button"
+            onClick={() => setText(e)}
+            className="h-6 max-w-60 truncate rounded-md bg-button px-2 txt-compact-xsmall text-muted shadow-button outline-hidden transition-[color,background-color,box-shadow] hover:bg-button-hover hover:text-fg focus-visible:shadow-button-focus"
+          >
             {e}
           </button>
         ))}
       </div>
       {deferred.trim() && (
-        <div className="rounded-lg border border-line bg-panel-2/50 p-4">
+        <div className="rounded-lg border border-line bg-subtle p-4">
           <Highlighted message={deferred} tokens={result.tokens} />
           <div className="mt-3 flex flex-wrap gap-1.5">
             <Badge tone={result.confidence === "high" ? "ok" : result.confidence === "medium" ? "warn" : "bad"}>{result.confidence} confidence</Badge>

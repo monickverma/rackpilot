@@ -197,6 +197,34 @@ export const TruckIcon = make(
 
 export const ChevronRightIcon = make(<path d="m9 18 6-6-6-6" />, "ChevronRightIcon");
 
+/** Filled breadcrumb separator, after Medusa's TriangleRightMini. */
+export const TriangleRightIcon = make(<path d="M10 8.2v7.6a.5.5 0 0 0 .8.4l4.9-3.8a.5.5 0 0 0 0-.8l-4.9-3.8a.5.5 0 0 0-.8.4Z" fill="currentColor" stroke="none" />, "TriangleRightIcon");
+
+export const PanelLeftIcon = make(
+  <>
+    <rect width="18" height="18" x="3" y="3" rx="2" />
+    <path d="M9 3v18" />
+  </>,
+  "PanelLeftIcon",
+);
+
+export const SunIcon = make(
+  <>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2" />
+    <path d="M12 20v2" />
+    <path d="m4.93 4.93 1.41 1.41" />
+    <path d="m17.66 17.66 1.41 1.41" />
+    <path d="M2 12h2" />
+    <path d="M20 12h2" />
+    <path d="m6.34 17.66-1.41 1.41" />
+    <path d="m19.07 4.93-1.41 1.41" />
+  </>,
+  "SunIcon",
+);
+
+export const MoonIcon = make(<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />, "MoonIcon");
+
 export const ShieldCheckIcon = make(
   <>
     <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />

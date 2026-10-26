@@ -4,7 +4,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { MessagePlusIcon } from "@/components/icons";
 import { OrderBadge } from "@/components/status";
-import { Badge, ButtonLink, Card, CardSkeleton, cn, Empty, Mono, PageHeader, Table, Td, Th } from "@/components/ui";
+import { Badge, ButtonLink, Card, CardSkeleton, Empty, Mono, PageHeader, tabClass, Table, Td, Th } from "@/components/ui";
 import type { OrderStatus } from "@/db/schema";
 import { ago, dueDay, dueIn } from "@/lib/format";
 import { listOrders } from "@/lib/orders";
@@ -22,7 +22,6 @@ export default function OrdersPage({ searchParams }: { searchParams: Promise<Rec
   return (
     <>
       <PageHeader
-        eyebrow="Orders"
         title="WhatsApp orders"
         description="Every order keeps the customer's original message next to what was reserved, so you can always see why."
         actions={
@@ -46,12 +45,13 @@ async function OrderList({ searchParams }: { searchParams: Promise<Record<string
   const now = new Date().getTime();
   return (
     <Card>
-      <div className="flex gap-1 border-b border-line px-3 py-2">
+      <div className="flex flex-wrap gap-1 border-b border-line px-6 py-3">
         {TABS.map((t) => (
           <Link
             key={t.key}
             href={t.key === "all" ? "/orders" : `/orders?tab=${t.key}`}
-            className={cn("rounded-md px-2.5 py-1 text-[13px] font-medium", t.key === tab.key ? "bg-panel-2 text-fg" : "text-muted hover:text-fg")}
+            aria-current={t.key === tab.key ? "page" : undefined}
+            className={tabClass(t.key === tab.key)}
           >
             {t.label}
           </Link>
@@ -72,7 +72,7 @@ async function OrderList({ searchParams }: { searchParams: Promise<Record<string
           </thead>
           <tbody>
             {orders.map((o) => (
-              <tr key={o.id} className="hover:bg-panel-2/50">
+              <tr key={o.id} className="hover:bg-panel-2">
                 <Td>
                   <Link href={`/orders/${o.id}`} className="font-medium hover:underline">
                     <Mono>{o.code}</Mono>
@@ -92,7 +92,7 @@ async function OrderList({ searchParams }: { searchParams: Promise<Record<string
                 </Td>
                 <Td className="whitespace-nowrap text-muted">
                   {o.dueAt ? dueDay(o.dueLabel, o.dueAt) : "—"}
-                  {o.status === "confirmed" && o.dueAt && <div className="text-[11px]">{dueIn(o.dueAt, now)}</div>}
+                  {o.status === "confirmed" && o.dueAt && <div className="text-xs">{dueIn(o.dueAt, now)}</div>}
                 </Td>
                 <Td align="right" className="whitespace-nowrap text-muted">{ago(o.createdAt, now)}</Td>
               </tr>

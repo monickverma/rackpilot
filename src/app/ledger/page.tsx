@@ -6,8 +6,9 @@ import { Suspense } from "react";
 import { ShieldCheckIcon } from "@/components/icons";
 import { MovementTable } from "@/components/movement-table";
 import { Delta, MOVEMENT, MovementBadge } from "@/components/status";
-import { Button, Card, CardHeader, CardSkeleton, cn, inputClass, Mono, PageHeader, Table, Td, Th } from "@/components/ui";
+import { Button, Card, CardHeader, CardSkeleton, cn, IconBadge, inputClass, Mono, PageHeader, Table, Td, Th } from "@/components/ui";
 import type { MovementType } from "@/db/schema";
+import { orderCode } from "@/lib/format";
 import { movements, movementTotals, reconcile, type LedgerFilter } from "@/lib/inventory";
 
 export const metadata: Metadata = { title: "Ledger" };
@@ -20,7 +21,6 @@ export default function LedgerPage({ searchParams }: { searchParams: SP }) {
   return (
     <>
       <PageHeader
-        eyebrow="Ledger"
         title="Stock movements"
         description="The append-only record behind every number in RackPilot. Receive, reserve, release, sale, adjust and exchange rows; on-hand and reserved are their running sums."
       />
@@ -47,11 +47,13 @@ async function Ledger({ searchParams }: { searchParams: SP }) {
   const totalRows = totals.reduce((a, t) => a + (type ? (t.type === type ? t.rows : 0) : t.rows), 0);
 
   return (
-    <div className="space-y-6">
-      <Card className={ok ? "" : "border-bad/40"}>
-        <div className="flex flex-wrap items-start gap-4 p-5">
-          <ShieldCheckIcon size={22} className={ok ? "text-ok" : "text-bad"} />
-          <div className="min-w-0 flex-1 text-[13px]">
+    <div className="space-y-3">
+      <Card className={ok ? undefined : "ring-1 ring-bad/40"}>
+        <div className="flex items-start gap-3 px-6 py-4">
+          <IconBadge tone={ok ? "ok" : "bad"}>
+            <ShieldCheckIcon />
+          </IconBadge>
+          <div className="min-w-0 flex-1">
             <div className="font-medium">{ok ? "Reconciled" : "Mismatch found"}</div>
             <p className="mt-0.5 text-muted">
               Summing all {check.movements.toLocaleString("en-IN")} rows per SKU gives exactly the stored on-hand and reserved for{" "}
@@ -69,13 +71,13 @@ async function Ledger({ searchParams }: { searchParams: SP }) {
       </Card>
 
       <Card>
-        <Form action="/ledger" className="flex flex-wrap items-center gap-2 border-b border-line px-4 py-3">
-          <select name="type" defaultValue={type ?? ""} className={cn(inputClass, "w-auto")}>
+        <Form action="/ledger" className="flex flex-wrap items-center gap-2 border-b border-line px-6 py-3">
+          <select name="type" defaultValue={type ?? ""} className={inputClass}>
             <option value="">All types</option>
             {TYPES.map((t) => <option key={t} value={t}>{MOVEMENT[t][1]}</option>)}
           </select>
           <input name="sku" defaultValue={sku} placeholder="SKU or prefix, e.g. K101-BLK" className={cn(inputClass, "w-56")} />
-          <select name="days" defaultValue={days ? String(days) : ""} className={cn(inputClass, "w-auto")}>
+          <select name="days" defaultValue={days ? String(days) : ""} className={inputClass}>
             <option value="">All time</option>
             <option value="1">Today and yesterday</option>
             <option value="7">Last 7 days</option>
@@ -85,7 +87,7 @@ async function Ledger({ searchParams }: { searchParams: SP }) {
           {order && <input type="hidden" name="order" value={order} />}
           <Button type="submit">Filter</Button>
           {filtered && <Link href="/ledger" className="text-[13px] text-muted hover:text-fg">Clear</Link>}
-          {order && <span className="text-xs text-muted">Order <Mono>#{order}</Mono></span>}
+          {order && <span className="text-xs text-muted">Order <Mono>{orderCode(order)}</Mono></span>}
         </Form>
 
         <div className="border-b border-line">

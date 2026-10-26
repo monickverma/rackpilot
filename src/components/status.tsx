@@ -2,7 +2,7 @@
 
 import type { LineStatus, MovementType, OrderStatus } from "@/db/schema";
 import type { Severity } from "@/lib/insights";
-import { Badge, type Tone } from "./ui";
+import { StatusBadge, type Tone } from "./ui";
 
 const ORDER: Record<OrderStatus, [Tone, string]> = {
   confirmed: ["accent", "Open"],
@@ -33,10 +33,10 @@ const SEVERITY: Record<Severity, [Tone, string]> = {
   low: ["warn", "Low"],
 };
 
-export const OrderBadge = ({ status }: { status: OrderStatus }) => <Badge tone={ORDER[status][0]}>{ORDER[status][1]}</Badge>;
-export const LineBadge = ({ status }: { status: LineStatus }) => <Badge tone={LINE[status][0]}>{LINE[status][1]}</Badge>;
-export const MovementBadge = ({ type }: { type: MovementType }) => <Badge tone={MOVEMENT[type][0]}>{MOVEMENT[type][1]}</Badge>;
-export const SeverityBadge = ({ severity }: { severity: Severity }) => <Badge tone={SEVERITY[severity][0]}>{SEVERITY[severity][1]}</Badge>;
+export const OrderBadge = ({ status }: { status: OrderStatus }) => <StatusBadge tone={ORDER[status][0]}>{ORDER[status][1]}</StatusBadge>;
+export const LineBadge = ({ status }: { status: LineStatus }) => <StatusBadge tone={LINE[status][0]}>{LINE[status][1]}</StatusBadge>;
+export const MovementBadge = ({ type }: { type: MovementType }) => <StatusBadge tone={MOVEMENT[type][0]}>{MOVEMENT[type][1]}</StatusBadge>;
+export const SeverityBadge = ({ severity }: { severity: Severity }) => <StatusBadge tone={SEVERITY[severity][0]}>{SEVERITY[severity][1]}</StatusBadge>;
 
 export function Delta({ n }: { n: number }) {
   if (n === 0) return <span className="text-faint">0</span>;
