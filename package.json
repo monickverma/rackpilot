@@ -8,13 +8,12 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit --incremental false",
-    "test": "node scripts/smoke.ts && node scripts/eval-parser.ts",
-    "smoke": "node scripts/smoke.ts",
-    "seed:preview": "node scripts/seed-preview.ts",
-    "eval:parser": "node scripts/eval-parser.ts --write"
+    "test": "node scripts/test.ts",
+    "test:report": "node scripts/test.ts --write"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "1.3.0",
+    "@electric-sql/pglite": "^0.5.8",
     "next": "16.4.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",

@@ -1,0 +1,17 @@
+{
+  "about": "Questions about supplier terms and house policies, each with the document section that answers it.",
+  "cases": [
+    { "q": "What is Tiruppur's minimum order quantity?", "title": "Tiruppur Knit Mills: supply terms", "heading": "Minimum order quantity and packs" },
+    { "q": "How long does Ludhiana Fleece House take to deliver?", "title": "Ludhiana Fleece House: supply terms", "heading": "Lead time" },
+    { "q": "Can we return defective jeans to Ahmedabad Denim Works?", "title": "Ahmedabad Denim Works: supply terms", "heading": "Defects and returns" },
+    { "q": "What are Kolkata Shirting's payment terms?", "title": "Kolkata Shirting Co.: supply terms", "heading": "Payment terms" },
+    { "q": "Who can approve a stock adjustment?", "title": "Stock counts and adjustments policy", "heading": "Who can approve adjustments" },
+    { "q": "How fast must payments be allocated to invoices?", "title": "Credit and billing policy", "heading": "Payment allocation" },
+    { "q": "What happens to goods damaged in transit from retailers?", "title": "Customer returns and exchanges policy", "heading": "Damaged in transit" },
+    { "q": "Does Tiruppur give a discount on large orders?", "title": "Tiruppur Knit Mills: supply terms", "heading": "Pricing and price breaks" },
+    { "q": "How many days do retailers have to return goods?", "title": "Customer returns and exchanges policy", "heading": "Eligibility" },
+    { "q": "What should I check before adjusting a count variance?", "title": "Stock counts and adjustments policy", "heading": "Investigating variances" },
+    { "q": "What pack size does Ahmedabad Denim ship jeans in?", "title": "Ahmedabad Denim Works: supply terms", "heading": "Minimum order quantity and packs" },
+    { "q": "When should we book hoodies for the winter peak?", "title": "Ludhiana Fleece House: supply terms", "heading": "Lead time" }
+  ]
+}

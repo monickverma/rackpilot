@@ -313,3 +313,149 @@ export const GithubIcon = make(
   </>,
   "GithubIcon",
 );
+
+export const RouteIcon = make(
+  <>
+    <circle cx="6" cy="19" r="3" />
+    <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" />
+    <circle cx="18" cy="5" r="3" />
+  </>,
+  "RouteIcon",
+);
+
+export const BoxSearchIcon = make(
+  <>
+    <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l.5-.29" />
+    <path d="m3.3 7 8.7 5 8.7-5" />
+    <path d="M12 22V12" />
+    <circle cx="18.5" cy="15.5" r="2.5" />
+    <path d="M20.27 17.27 22 19" />
+  </>,
+  "BoxSearchIcon",
+);
+
+export const FileSearchIcon = make(
+  <>
+    <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+    <path d="M4.268 21a2 2 0 0 0 1.727 1H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3" />
+    <path d="m9 18-1.5-1.5" />
+    <circle cx="5" cy="14" r="3" />
+  </>,
+  "FileSearchIcon",
+);
+
+export const BellIcon = make(
+  <>
+    <path d="M10.268 21a2 2 0 0 0 3.464 0" />
+    <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />
+  </>,
+  "BellIcon",
+);
+
+export const ChartIcon = make(
+  <>
+    <path d="M3 3v16a2 2 0 0 0 2 2h16" />
+    <path d="M18 17V9" />
+    <path d="M13 17V5" />
+    <path d="M8 17v-3" />
+  </>,
+  "ChartIcon",
+);
+
+export const CartIcon = make(
+  <>
+    <circle cx="8" cy="21" r="1" />
+    <circle cx="19" cy="21" r="1" />
+    <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+  </>,
+  "CartIcon",
+);
+
+export const ChatIcon = make(
+  <>
+    <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+    <path d="M8 12h.01" />
+    <path d="M12 12h.01" />
+    <path d="M16 12h.01" />
+  </>,
+  "ChatIcon",
+);
+
+export const TargetIcon = make(
+  <>
+    <circle cx="12" cy="12" r="10" />
+    <circle cx="12" cy="12" r="6" />
+    <circle cx="12" cy="12" r="2" />
+  </>,
+  "TargetIcon",
+);
+
+export const ArrowLeftRightIcon = make(
+  <>
+    <path d="M8 3 4 7l4 4" />
+    <path d="M4 7h16" />
+    <path d="m16 21 4-4-4-4" />
+    <path d="M20 17H4" />
+  </>,
+  "ArrowLeftRightIcon",
+);
+
+export const MicIcon = make(
+  <>
+    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+    <line x1="12" x2="12" y1="19" y2="22" />
+  </>,
+  "MicIcon",
+);
+
+export const UploadIcon = make(
+  <>
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="17 8 12 3 7 8" />
+    <line x1="12" x2="12" y1="3" y2="15" />
+  </>,
+  "UploadIcon",
+);
+
+export const UserIcon = make(
+  <>
+    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </>,
+  "UserIcon",
+);
+
+export const ListChecksIcon = make(
+  <>
+    <path d="m3 17 2 2 4-4" />
+    <path d="m3 7 2 2 4-4" />
+    <path d="M13 6h8" />
+    <path d="M13 12h8" />
+    <path d="M13 18h8" />
+  </>,
+  "ListChecksIcon",
+);
+
+export const ScaleIcon = make(
+  <>
+    <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+    <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+    <path d="M7 21h10" />
+    <path d="M12 3v18" />
+    <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2" />
+  </>,
+  "ScaleIcon",
+);
+
+export const WarehouseIcon = make(
+  <>
+    <path d="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35A2 2 0 0 1 3.26 6.5l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z" />
+    <path d="M6 18h12" />
+    <path d="M6 14h12" />
+    <rect width="12" height="12" x="6" y="10" />
+  </>,
+  "WarehouseIcon",
+);
+
+export const PlayIcon = make(<polygon points="6 3 20 12 6 21 6 3" />, "PlayIcon");

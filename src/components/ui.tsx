@@ -214,3 +214,21 @@ export function CardSkeleton({ rows = 4 }: { rows?: number }) {
     </Card>
   );
 }
+
+/** A record code (ORD-1042, INV-2058, SS-004, a SKU) that links to the page showing it. */
+export function RecordLink({ code, className }: { code: string; className?: string }) {
+  return (
+    <Link href={`/r/${encodeURIComponent(code)}`} className={cn("whitespace-nowrap font-mono text-[12px] text-accent hover:underline", className)}>
+      {code}
+    </Link>
+  );
+}
+
+export function KeyValue({ label, children }: { label: ReactNode; children: ReactNode }) {
+  return (
+    <div>
+      <dt className="text-xs text-muted">{label}</dt>
+      <dd className="mt-0.5 text-[13px] font-medium">{children}</dd>
+    </div>
+  );
+}

@@ -215,3 +215,29 @@ _Pasted text with no message of its own, sent while Claude was working; picked u
 _Chosen from a suggested reply that Claude offered in the Claude desktop app._
 
 > Yes: commit the website and push it to main.
+
+## 15. 26 Oct 2026, 01:10 PM IST
+
+_The message was this line followed by the full product specification. The specification is stored word for word in [spec/rackpilot-spec.md](spec/rackpilot-spec.md) rather than repeated here._
+
+> i want to make the project for hackathon again here it how it goes
+>
+> # RackPilot — Complete Product Specification
+>
+> _(continues as in [spec/rackpilot-spec.md](spec/rackpilot-spec.md))_
+
+## 16. 26 Oct 2026, 01:12 PM IST
+
+_Sent as an interruption while Claude was starting on prompt 15._
+
+> Have to rebuild it from scratch and also rebrand it so that all 10 steps are followed line by line, and that is how the position should be, right? RackPilot is an AI-powered this, this, this. It's in the first paragraph. That is how it all should look, and all of it should adjust to that. Rebuild it from there.
+
+## 17. 26 Oct 2026, 01:13 PM IST
+
+_Sent while Claude was working. The message was the OrderTrace and StockSleuth specification, stored word for word in [spec/ordertrace-stocksleuth-spec.md](spec/ordertrace-stocksleuth-spec.md)._
+
+> # RackPilot — Complete Product Specification
+>
+> You already have the core RackPilot concept: an AI-powered operating system for clothing businesses that manages orders, inventory, stock locations, sales analytics, and purchasing decisions.
+>
+> _(continues as in [spec/ordertrace-stocksleuth-spec.md](spec/ordertrace-stocksleuth-spec.md))_
