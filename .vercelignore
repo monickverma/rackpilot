@@ -2,6 +2,5 @@
 .claude
 .next
 .env*
-local.db
-local.db-*
+.pglite
 *.tsbuildinfo

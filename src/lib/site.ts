@@ -1,4 +1,5 @@
-// Public links the website points to.
-
-export const REPO_URL = "https://github.com/monickverma/rackpilot";
-export const repoFile = (path: string) => `${REPO_URL}/blob/main/${path}`;
+// Public links used by the website and the README.
+export const SITE = {
+  url: "https://rackpilot-eta.vercel.app",
+  repo: "https://github.com/monickverma/rackpilot",
+};

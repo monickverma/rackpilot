@@ -1,696 +1,249 @@
-import type { Metadata } from "next";
 import Link from "next/link";
-import type { ReactNode } from "react";
-import { Highlighted } from "@/components/highlighted";
-import {
-  AlertIcon,
-  ArrowRightIcon,
-  ChevronRightIcon,
-  GithubIcon,
-  MessagePlusIcon,
-  PackageIcon,
-  PrinterIcon,
-  ScanTextIcon,
-  ScrollIcon,
-  ShieldCheckIcon,
-  TrendingIcon,
-  TruckIcon,
-} from "@/components/icons";
-import { Delta, LineBadge, MovementBadge } from "@/components/status";
-import { Badge, ButtonLink, IconBadge, Location, Mono, Table, Td, Th, type Tone } from "@/components/ui";
-import type { LineStatus, MovementType } from "@/db/schema";
-import { evaluate, pct, type CaseResult, type EvalSummary, type TestCase } from "@/lib/parser/evaluate";
-import { parseOrder } from "@/lib/parser/parse";
-import { REPO_URL } from "@/lib/site";
-import testset from "../../../data/parser-testset.json";
+import report from "../../../data/test-report.json" with { type: "json" };
+import { ArrowRightIcon, BoxSearchIcon, ChartIcon, FileSearchIcon, RouteIcon } from "@/components/icons";
+import { Badge, ButtonLink, Card, cn } from "@/components/ui";
+import { RULES } from "@/lib/investigate/types";
 
-export const metadata: Metadata = {
-  title: { absolute: "RackPilot · WhatsApp orders to reserved stock and pick lists" },
-  description:
-    "RackPilot reads Hinglish WhatsApp orders, reserves the right size and colour on the right rack, and prints the pick list. Try the live demo with a made-up clothing shop.",
-};
+const pct = (n: number) => `${Math.round(n * 100)}%`;
 
-// The 90-second demo order, as the first customer in the demo inbox sends it.
-const MESSAGE = "Bhaiya 3 black kurti M, 2 L, 1 maroon XL, Saturday tak";
-
-// What confirming MESSAGE does in a freshly seeded demo shop. scripts/smoke.ts
-// checks the same outcome on every test run.
-const RESERVED: { sku: string; bin: string; qty: number; status: LineStatus }[] = [
-  { sku: "K101-BLK-M", bin: "R1-A1", qty: 3, status: "reserved" },
-  { sku: "K101-BLK-L", bin: "R1-A1", qty: 2, status: "reserved" },
-  { sku: "K101-MRN-XL", bin: "R1-A2", qty: 1, status: "short" },
-];
-
-// The same order's ledger rows once it has been handed over, oldest first.
-const LEDGER: { type: MovementType; sku: string; onHand: number; reserved: number }[] = [
-  { type: "reserve", sku: "K101-BLK-M", onHand: 0, reserved: 3 },
-  { type: "reserve", sku: "K101-BLK-L", onHand: 0, reserved: 2 },
-  { type: "sale", sku: "K101-BLK-M", onHand: -3, reserved: -3 },
-  { type: "sale", sku: "K101-BLK-L", onHand: -2, reserved: -2 },
-];
-
-const cases = (testset as unknown as { cases: TestCase[] }).cases;
-
-export default function HomePage() {
-  // Pure and deterministic, so this runs once at build time, like the parser page.
-  const { results, summary } = evaluate(cases, parseOrder);
+function Section({ id, eyebrow, title, intro, children, tint }: { id?: string; eyebrow: string; title: string; intro?: React.ReactNode; children: React.ReactNode; tint?: boolean }) {
   return (
-    <>
-      <Hero summary={summary} />
-      <Problem />
-      <Modules />
-      <HowItWorks />
-      <Features />
-      <Accuracy summary={summary} misses={results.filter((r) => !r.pass)} />
-      <Ledger />
-      <Faq />
-      <Closing />
-    </>
-  );
-}
-
-function Section({ id, eyebrow, title, intro, children }: { id: string; eyebrow: string; title: ReactNode; intro?: ReactNode; children: ReactNode }) {
-  return (
-    <section id={id} className="scroll-mt-14 border-t border-line">
-      <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
-        <div className="max-w-2xl">
-          <p className="txt-compact-small-plus text-accent">{eyebrow}</p>
-          <h2 className="mt-3 text-[28px] font-medium leading-9 tracking-[-0.02em] sm:text-[36px] sm:leading-[44px]">{title}</h2>
-          {intro && <p className="mt-4 text-[15px] leading-6 text-muted">{intro}</p>}
-        </div>
-        <div className="mt-10 sm:mt-12">{children}</div>
+    <section id={id} className={cn("scroll-mt-16 border-t border-line", tint && "bg-subtle")}>
+      <div className="mx-auto max-w-6xl px-4 py-16">
+        <div className="text-xs font-medium uppercase tracking-wide text-accent">{eyebrow}</div>
+        <h2 className="mt-2 max-w-3xl text-2xl font-medium tracking-tight sm:text-[28px] sm:leading-9">{title}</h2>
+        {intro && <div className="mt-3 max-w-3xl text-[15px] leading-7 text-muted">{intro}</div>}
+        <div className="mt-8">{children}</div>
       </div>
     </section>
   );
 }
 
-function TextLink({ href, children }: { href: string; children: ReactNode }) {
-  return (
-    <Link href={href} className="inline-flex items-center gap-1 txt-compact-small-plus text-accent hover:underline">
-      {children} <ArrowRightIcon size={14} />
-    </Link>
-  );
-}
+const FEATURES = [
+  ["A", "AI-powered order intake", "Messages, voice-note transcripts and photos or PDFs of order sheets become structured lines. Ambiguous or unknown items ask you to choose; it never invents a SKU. A confirmation screen comes before anything is reserved.", "/orders/new?sample=spec"],
+  ["B", "Inventory and SKU management", "Products, designs, brands, size and colour variants, cost and price, on-hand, reserved and available, supplier and history. Damaged and quarantined stock is excluded from sellable.", "/inventory"],
+  ["C", "Physical rack and location tracking", "Warehouse A → Rack R-12 → Shelf 3 → Bin 12. Search or scan to find a garment, pick by location, move stock between racks, record counts, and flag bins that need verifying.", "/inventory/BLK-TSH-M"],
+  ["D", "Order fulfilment and reservations", "Validate, reserve, pick by location, dispatch, invoice. Database constraints stop two orders taking the same units. Shortfalls are explained, and the owner chooses: backorder or ship what's there.", "/orders"],
+  ["E", "Stock alerts and exceptions", "Running low, can't be fulfilled, orders competing for stock, bins to verify, deadlines at risk, count discrepancies, unsold stock. Each from an explicit rule that says what triggered it.", "/alerts"],
+  ["F", "Sales and inventory analytics", "Best sellers, fastest sizes and colours, trends, cover, stockout days, ageing, value at cost and margin. Gaps in the sales records are flagged, not read as dead stock.", "/analytics"],
+  ["G", "Demand forecasting and replenishment", "Demand from what customers ordered, so stockouts don't hide it. The forecast is backtested against history and its error is shown.", "/analytics"],
+  ["H", "Budget-aware purchasing", "“I've got ₹30,000.” A hard budget, supplier packs and minimums, customers waiting first, best margin per rupee next. Evidence, risks, assumptions and what not to reorder, all before the owner approves.", "/purchasing?budget=30000"],
+  ["I", "Natural-language business assistant", "Ask in ordinary words. Each question maps to a fixed query template; the database does the arithmetic; the answer says how it was computed.", "/assistant"],
+];
 
-function Hero({ summary }: { summary: EvalSummary }) {
-  const facts = [
-    { value: `${summary.cases.passed}/${summary.cases.total}`, label: "test orders read exactly right" },
-    { value: "307", label: "SKUs across six racks" },
-    { value: "6,500+", label: "ledger rows behind the counts" },
-    { value: "0", label: "stock decisions made by AI" },
-  ];
+const AI_TABLE = [
+  ["Extract order details from messages", "LLM with structured output", "Rules by default; Claude reads text, photos and PDFs into a fixed schema (optional)"],
+  ["Match a description to a product", "Database search, AI-assisted if needed", "Catalogue matcher scores product words; Claude may suggest a product code, the matcher still decides"],
+  ["Calculate stock availability", "Database queries and business rules", "Available = sellable on-hand − active reservations"],
+  ["Reserve inventory safely", "Transactional backend logic", "Row locks, one transaction per order, CHECK (reserved ≤ on_hand)"],
+  ["Find a garment's recorded location", "Inventory database", "Balances per variant and bin; search by SKU, barcode or description"],
+  ["Calculate sales and gross margin", "SQL and validated financial calculations", "Dispatch records × order price − unit cost; cross-checked two ways on the Measurements page"],
+  ["Forecast demand", "Statistical models, evaluated on history", "28-day ordered rate, backtested weekly against a naive baseline"],
+  ["Explain a business result", "LLM grounded in retrieved results", "Claude rewords computed answers; any number or code not in the results is rejected"],
+  ["Answer questions about supplier policies", "RAG over documents", "Postgres full-text search over supplier terms and house policies"],
+  ["Produce a purchasing proposal", "Rules plus validated business data", "Priority funding within a hard budget, packs and minimum orders"],
+  ["Decide whether records reconcile", "Deterministic rules, never an LLM", "17 OrderTrace and StockSleuth rules with versions and exceptions"],
+];
+
+export default function Home() {
+  const ot = Object.entries(RULES).filter(([, r]) => r.module === "ordertrace");
+  const ss = Object.entries(RULES).filter(([, r]) => r.module === "stocksleuth");
+  const passed = report.results.filter((r) => r.passed).length;
   return (
-    <section className="relative overflow-hidden">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-grid" />
-      <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-14 sm:px-6 sm:pb-24 sm:pt-24">
-        <div className="mx-auto max-w-3xl text-center">
-          <Link
-            href="/dashboard"
-            className="inline-flex max-w-full items-center gap-2 rounded-full bg-panel py-1 pl-1 pr-3 txt-compact-small-plus text-muted shadow-card outline-hidden transition-shadow hover:shadow-card-hover focus-visible:shadow-active"
-          >
-            <span className="shrink-0 whitespace-nowrap rounded-full bg-tag-green px-2 text-tag-green-fg">Live demo</span>
-            <span className="truncate sm:hidden">Try it on a made-up shop</span>
-            <span className="hidden truncate sm:inline">A made-up shop with six months of orders</span>
-            <ArrowRightIcon size={14} className="shrink-0" />
-          </Link>
-          <h1 className="mt-6 text-balance text-[40px] font-medium leading-[44px] tracking-[-0.03em] sm:text-[56px] sm:leading-[60px]">
-            WhatsApp orders in. <span className="text-muted">Reserved stock and pick lists out.</span>
+    <main>
+      <section className="relative overflow-hidden">
+        <div className="bg-grid pointer-events-none absolute inset-0" aria-hidden="true" />
+        <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-20 sm:pt-28">
+          <Badge tone="accent">Operations · OrderTrace · StockSleuth</Badge>
+          <h1 className="mt-5 max-w-4xl text-[34px] font-medium leading-[1.15] tracking-tight sm:text-5xl">
+            RackPilot is an AI-powered operations and business intelligence platform for clothing businesses.
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-[16px] leading-7 text-muted">
-            RackPilot reads the Hinglish orders customers type on WhatsApp, holds the right size and colour on the right rack, and prints a pick list in rack order.
-            Every stock number links back to the ledger rows behind it.
+          <p className="mt-6 max-w-3xl text-[16px] leading-7 text-muted">
+            For small clothing wholesalers, independent apparel brands and clothing retailers. It combines inventory management, order processing, physical stock tracking, fulfilment workflows, sales analytics and intelligent purchasing recommendations in one system. Two investigation modules sit on the same records: <span className="text-fg">OrderTrace</span> reconciles orders, invoices, payments and dispatches, and <span className="text-fg">StockSleuth</span> reconstructs stock movements to explain why recorded stock and the shelf disagree.
           </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <ButtonLink href="/dashboard" variant="primary" size="lg">
-              Open the live demo <ArrowRightIcon size={16} />
-            </ButtonLink>
-            <ButtonLink href="/orders/new" size="lg">
-              <MessagePlusIcon size={16} /> Read a WhatsApp order
-            </ButtonLink>
-          </div>
-          <p className="mt-4 text-xs text-faint">No sign-up. Nothing you do there touches a real shop.</p>
-        </div>
-
-        <HeroDemo />
-
-        <dl className="mx-auto mt-3 grid max-w-5xl grid-cols-2 gap-px overflow-hidden rounded-lg bg-line shadow-card lg:grid-cols-4">
-          {facts.map((f) => (
-            <div key={f.label} className="flex flex-col-reverse justify-end gap-1 bg-panel px-5 py-4">
-              <dt className="txt-small text-muted">{f.label}</dt>
-              <dd className="text-2xl font-medium tracking-tight tabular">{f.value}</dd>
-            </div>
-          ))}
-        </dl>
-      </div>
-    </section>
-  );
-}
-
-function Pane({ step, title, icon, children }: { step: number; title: string; icon: ReactNode; children: ReactNode }) {
-  return (
-    <div className="min-w-0 rounded-lg bg-panel p-4 shadow-card">
-      <div className="mb-3 flex items-center gap-2">
-        <IconBadge>{icon}</IconBadge>
-        <span className="txt-compact-small-plus">{title}</span>
-        <span className="ml-auto font-mono text-[11px] text-faint">{step}/3</span>
-      </div>
-      {children}
-    </div>
-  );
-}
-
-/** The demo order, drawn with the app's own components. The middle pane is the real parser's output. */
-function HeroDemo() {
-  const parsed = parseOrder(MESSAGE);
-  const due = parsed.due ? parsed.due.label[0].toUpperCase() + parsed.due.label.slice(1) : null;
-  return (
-    <figure className="mx-auto mt-14 max-w-5xl rounded-xl bg-bg p-1.5 shadow-modal ring-1 ring-line sm:mt-16">
-      <div className="flex items-center gap-3 px-2 pb-2 pt-1" aria-hidden="true">
-        <span className="flex gap-1.5">
-          {[0, 1, 2].map((i) => (
-            <span key={i} className="size-2.5 rounded-full bg-line-strong" />
-          ))}
-        </span>
-        <span className="mx-auto rounded-md bg-panel-2 px-3 py-0.5 font-mono text-[11px] text-faint">rackpilot / orders / new</span>
-        <span className="w-[42px]" />
-      </div>
-      <div className="grid gap-1.5 text-left lg:grid-cols-[1fr_1.25fr_1.15fr]">
-        <Pane step={1} title="The message" icon={<MessagePlusIcon />}>
-          <div className="rounded-md bg-[#efeae2] p-3 dark:bg-[#0b141a]">
-            <div className="relative max-w-[94%] rounded-lg rounded-tl-none bg-white px-2.5 py-1.5 text-[14px] leading-5 text-[#111b21] shadow-[0_1px_0.5px_rgb(11_20_26/0.13)] dark:bg-[#202c33] dark:text-[#e9edef]">
-              <div className="text-[12px] font-medium text-[#1fa855]">Sunita B.</div>
-              {MESSAGE}
-              <span className="float-right ml-3 mt-1.5 text-[11px] leading-none text-[#667781] dark:text-[#8696a0]">10:42</span>
-            </div>
-          </div>
-          <p className="mt-3 text-xs text-muted">Pasted exactly as the customer sent it.</p>
-        </Pane>
-
-        <Pane step={2} title="What RackPilot read" icon={<ScanTextIcon />}>
-          <Highlighted message={MESSAGE} tokens={parsed.tokens} />
-          <ul className="mt-2 space-y-1.5">
-            {parsed.lines.map((l, i) => (
-              <li key={i} className="flex flex-wrap items-center gap-x-2 gap-y-0.5 txt-compact-small">
-                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-[4px] bg-tag-blue px-1 font-medium text-tag-blue-fg tabular">{l.qty}</span>
-                <span>{[l.product, l.colour, l.size].filter(Boolean).join(" · ")}</span>
-                {l.inherited.length > 0 && <span className="text-xs text-faint">{l.inherited.join(" and ")} carried over</span>}
-              </li>
-            ))}
-          </ul>
-          {due && (
-            <p className="mt-3 text-xs text-muted">
-              Due <span className="font-medium text-fg">{due}</span> · read by rules, no AI
-            </p>
-          )}
-        </Pane>
-
-        <Pane step={3} title="Reserved on confirm" icon={<PackageIcon />}>
-          <ul className="divide-y divide-line">
-            {RESERVED.map((r) => (
-              <li key={r.sku} className="flex items-center gap-2 py-2 first:pt-0">
-                <Location code={r.bin} />
-                <Mono className="min-w-0 truncate text-xs">{r.sku}</Mono>
-                <span className="text-xs text-muted tabular">×{r.qty}</span>
-                <span className="ml-auto">
-                  <LineBadge status={r.status} />
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-2 text-xs text-muted">The last maroon XL is already held for another customer, so that line is marked short instead of being promised twice.</p>
-        </Pane>
-      </div>
-      <figcaption className="sr-only">The demo order: a WhatsApp message, what the rules parser read from it, and the stock reserved when it is confirmed.</figcaption>
-    </figure>
-  );
-}
-
-const PROBLEMS = [
-  {
-    q: "Which maroon XL is already promised to someone else?",
-    a: "Confirming an order reserves each piece by size and colour, so the counter can't sell the same kurti twice.",
-    href: "/inventory/K101-MRN-XL",
-    cta: "See who it's held for",
-  },
-  {
-    q: "Which bestseller will run out before the supplier can deliver?",
-    a: "Low-stock flags compare free stock with the last 30 days of sales and the supplier's lead time.",
-    href: "/dashboard",
-    cta: "See low stock",
-  },
-  {
-    q: "How much money is sitting in stock nobody has bought for two months?",
-    a: "Dead stock is listed at cost, with how long each piece has waited on the rack.",
-    href: "/inventory?flag=dead",
-    cta: "See dead stock",
-  },
-];
-
-function Problem() {
-  return (
-    <Section
-      id="problem"
-      eyebrow="The problem"
-      title="A small shop runs on WhatsApp and memory"
-      intro="A two-person kurti shop takes most of its orders as chat messages, typed the way customers talk. The owner reads each one, walks the racks, and keeps the rest in their head."
-    >
-      <div className="grid gap-3 md:grid-cols-3">
-        {PROBLEMS.map((p) => (
-          <div key={p.q} className="flex flex-col rounded-lg bg-panel p-6 shadow-card">
-            <p className="text-[16px] font-medium leading-6 tracking-tight">&ldquo;{p.q}&rdquo;</p>
-            <p className="mt-3 txt-small text-muted">{p.a}</p>
-            <div className="mt-auto pt-5">
-              <TextLink href={p.href}>{p.cta}</TextLink>
-            </div>
-          </div>
-        ))}
-      </div>
-    </Section>
-  );
-}
-
-const STEPS = [
-  { icon: <MessagePlusIcon />, title: "Paste the message", text: "Hinglish, sizes, colours and “Saturday tak”, exactly as the customer typed it." },
-  {
-    icon: <ScanTextIcon />,
-    title: "Rules read it",
-    text: "A rules parser finds each line's product, colour, size and quantity, and the due date. Words it doesn't know are shown to you, not guessed.",
-  },
-  {
-    icon: <PackageIcon />,
-    title: "Confirm and reserve",
-    text: "Each line is matched to a SKU and its rack. Confirming reserves the free stock and shows any shortfall instead of hiding it.",
-  },
-  {
-    icon: <PrinterIcon />,
-    title: "Pick and hand over",
-    text: "Print a pick list in rack order. Handing the order over turns its reservations into sales, and every change is a ledger row.",
-  },
-];
-
-function HowItWorks() {
-  return (
-    <Section
-      id="how"
-      eyebrow="How it works"
-      title="From a chat message to a packed bag in four steps"
-      intro="This is the 90-second demo: one WhatsApp order, read, reserved, picked and handed over."
-    >
-      <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {STEPS.map((step, i) => (
-          <li key={step.title} className="rounded-lg bg-panel p-6 shadow-card">
-            <div className="flex items-center justify-between">
-              <IconBadge tone="accent">{step.icon}</IconBadge>
-              <span className="font-mono text-xs text-faint">0{i + 1}</span>
-            </div>
-            <h3 className="mt-5 h3-core">{step.title}</h3>
-            <p className="mt-2 txt-small text-muted">{step.text}</p>
-          </li>
-        ))}
-      </ol>
-      <div className="mt-6">
-        <ButtonLink href="/orders/new">
-          Try it in the demo <ArrowRightIcon size={15} />
-        </ButtonLink>
-      </div>
-    </Section>
-  );
-}
-
-const LOOP = [
-  { label: "Orders", detail: "WhatsApp messages become reserved order lines" },
-  { label: "Inventory", detail: "Every reserve, sale and count is a ledger row" },
-  { label: "Sales analysis", detail: "30-day sales for each size and colour" },
-  { label: "Replenishment", detail: "Reorder quantities in supplier packs" },
-  { label: "New inventory", detail: "Deliveries are received back onto the racks" },
-];
-
-const MODULES: { letter: string; title: string; text: string; href?: string; cta?: string }[] = [
-  {
-    letter: "A",
-    title: "Inventory and rack tracking",
-    text: "Every variant by size, colour, SKU and rack, with on-hand and reserved counts. Every stock change is recorded as a ledger row.",
-    href: "/inventory",
-    cta: "Stock by rack",
-  },
-  {
-    letter: "B",
-    title: "Smart order processing",
-    text: "Paste a WhatsApp message, check the extracted lines against stock, reserve it and print a pick list. Shortages show before anything is promised.",
-    href: "/orders/new",
-    cta: "Read a message",
-  },
-  {
-    letter: "C",
-    title: "Owner intelligence",
-    text: "Low stock, ageing stock, best sellers and reorder quantities, each with the sales and stock numbers it came from.",
-    href: "/dashboard",
-    cta: "Open the dashboard",
-  },
-  {
-    letter: "D",
-    title: "Ask your business",
-    text: "Questions like “Which sizes are selling fastest?” will run fixed database queries and show the rows behind each answer, not a free-form AI guess.",
-  },
-];
-
-function Modules() {
-  return (
-    <Section
-      id="modules"
-      eyebrow="What it covers"
-      title="Four modules, one loop"
-      intro="Orders draw down stock, sales show what is moving, and replenishment refills the racks. RackPilot runs the whole loop on one shared set of order, stock and sales data."
-    >
-      <ol className="grid gap-1.5 md:grid-cols-5" aria-label="The stock loop">
-        {LOOP.map((step, i) => (
-          <li key={step.label} className="relative flex items-start gap-3 rounded-lg bg-panel px-4 py-3 shadow-card md:flex-col md:gap-1">
-            <span className="font-mono text-xs text-faint">0{i + 1}</span>
-            <div>
-              <div className="txt-compact-small-plus">{step.label}</div>
-              <div className="mt-0.5 text-xs text-muted">{step.detail}</div>
-            </div>
-            {i < LOOP.length - 1 && (
-              <ArrowRightIcon
-                size={14}
-                aria-hidden="true"
-                className="absolute -bottom-[11px] left-[26px] z-10 rotate-90 rounded-full bg-bg text-faint md:-right-[11px] md:bottom-auto md:left-auto md:top-1/2 md:-translate-y-1/2 md:rotate-0"
-              />
-            )}
-          </li>
-        ))}
-      </ol>
-      <p className="mt-3 text-xs text-muted">…and the next order draws on the new stock.</p>
-
-      <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {MODULES.map((m) => (
-          <div key={m.letter} className="flex flex-col rounded-lg bg-panel p-6 shadow-card">
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-mono text-xs text-faint">Module {m.letter}</span>
-              {m.href ? <Badge tone="ok">In the demo</Badge> : <Badge>Next</Badge>}
-            </div>
-            <h3 className="mt-4 h3-core">{m.title}</h3>
-            <p className="mt-2 txt-small text-muted">{m.text}</p>
-            <div className="mt-auto pt-5">
-              {m.href && m.cta ? <TextLink href={m.href}>{m.cta}</TextLink> : <span className="txt-compact-small-plus text-faint">Not in this demo yet</span>}
-            </div>
-          </div>
-        ))}
-      </div>
-    </Section>
-  );
-}
-
-type Feature = { icon: ReactNode; tone: Tone; title: string; text: string; href: string; cta: string };
-
-const ENGINES: { title: string; question: string; features: Feature[] }[] = [
-  {
-    title: "Operations",
-    question: "What is happening in the shop right now?",
-    features: [
-      {
-        icon: <MessagePlusIcon />,
-        tone: "accent",
-        title: "Reads Hinglish orders",
-        text: "“ek kaala legging M”, “2 safed L”, “kal tak”. A line that continues the one before keeps its product, and unknown words are marked in red.",
-        href: "/orders/new",
-        cta: "Read a message",
-      },
-      {
-        icon: <PackageIcon />,
-        tone: "ok",
-        title: "Reserves, not just counts",
-        text: "On hand, reserved and free for every size, colour and rack. Reserved pieces can't be sold at the counter, so two orders never get the same kurti.",
-        href: "/inventory",
-        cta: "Stock by rack",
-      },
-      {
-        icon: <PrinterIcon />,
-        tone: "neutral",
-        title: "Pick lists in rack order",
-        text: "A printable list that walks the racks in order, with short lines listed separately so nothing is promised by mistake.",
-        href: "/orders",
-        cta: "Open an order",
-      },
-    ],
-  },
-  {
-    title: "Owner intelligence",
-    question: "What should the owner do next?",
-    features: [
-      {
-        icon: <AlertIcon />,
-        tone: "bad",
-        title: "Warns before stock runs out",
-        text: "Free stock against 30-day sales and the supplier's lead time, with the arithmetic written out on every flag.",
-        href: "/dashboard",
-        cta: "Low stock",
-      },
-      {
-        icon: <TruckIcon />,
-        tone: "warn",
-        title: "Evidence-backed reorders",
-        text: "Enough to cover the supplier's lead time plus 14 days at the last 30 days' rate, in their size-set packs, with the reason written on each suggestion.",
-        href: "/dashboard",
-        cta: "Reorder suggestions",
-      },
-      {
-        icon: <TrendingIcon />,
-        tone: "info",
-        title: "Best sellers and dead stock",
-        text: "The variants selling fastest over 30 days, and stock with no sale in 60 days, valued at cost.",
-        href: "/inventory?flag=dead",
-        cta: "Dead stock",
-      },
-    ],
-  },
-];
-
-function Features() {
-  return (
-    <Section
-      id="features"
-      eyebrow="Features"
-      title="Two engines on the same data"
-      intro="The operations side runs the day. The intelligence side reads the same orders, stock and sales to say what to do next. Every card opens the part of the live demo that does it."
-    >
-      <div className="space-y-10">
-        {ENGINES.map((engine) => (
-          <div key={engine.title}>
-            <div className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <h3 className="h2-core">{engine.title}</h3>
-              <p className="txt-small text-muted">{engine.question}</p>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {engine.features.map((f) => (
-                <Link
-                  key={f.title}
-                  href={f.href}
-                  className="group flex flex-col rounded-lg bg-panel p-6 shadow-card outline-hidden transition-shadow hover:shadow-card-hover focus-visible:shadow-active"
-                >
-                  <IconBadge tone={f.tone}>{f.icon}</IconBadge>
-                  <h4 className="mt-5 h3-core">{f.title}</h4>
-                  <p className="mt-2 txt-small text-muted">{f.text}</p>
-                  <span className="mt-auto inline-flex items-center gap-1 pt-5 txt-compact-small-plus text-muted transition-colors group-hover:text-fg">
-                    {f.cta} <ArrowRightIcon size={14} className="transition-transform group-hover:translate-x-0.5" />
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </Section>
-  );
-}
-
-function Accuracy({ summary: s, misses }: { summary: EvalSummary; misses: CaseResult[] }) {
-  const stats = [
-    { label: "All messages", value: `${s.cases.passed}/${s.cases.total}`, sub: `${pct(s.cases)}% fully correct` },
-    { label: "Holdout", value: `${s.holdout.passed}/${s.holdout.total}`, sub: "kept aside while the rules were written" },
-    { label: "Hinglish", value: `${s.hinglish.passed}/${s.hinglish.total}`, sub: `English ${s.english.passed}/${s.english.total}` },
-    { label: "Due dates", value: `${s.due.passed}/${s.due.total}`, sub: "“Saturday tak”, “kal tak” and the rest" },
-  ];
-  return (
-    <Section
-      id="accuracy"
-      eyebrow="Accuracy"
-      title={`Measured on ${s.cases.total} hand-labelled orders`}
-      intro={`${s.hinglish.total} Hinglish and ${s.english.total} English messages, labelled before the rules were written. A message counts only if every line's product, colour, size and quantity, and the due date, are exactly right.`}
-    >
-      <div className="grid gap-3 lg:grid-cols-[1.4fr_1fr]">
-        <div className="grid grid-cols-2 gap-3">
-          {stats.map((st) => (
-            <div key={st.label} className="rounded-lg bg-panel p-5 shadow-card">
-              <div className="txt-compact-small-plus text-muted">{st.label}</div>
-              <div className="mt-2 text-[32px] font-medium leading-10 tracking-tight tabular">{st.value}</div>
-              <div className="mt-1 text-xs text-muted">{st.sub}</div>
-            </div>
-          ))}
-        </div>
-        <div className="flex flex-col rounded-lg bg-panel p-6 shadow-card">
-          <h3 className="h3-core">Where the rules still miss</h3>
-          <ul className="mt-4 space-y-2">
-            {misses.map((m) => (
-              <li key={m.id} className="rounded-md border border-line bg-subtle px-3 py-2.5">
-                <p className="text-[13px] leading-5">&ldquo;{m.message}&rdquo;</p>
-                <p className="mt-1 text-xs text-faint">
-                  {m.split === "holdout" ? "Holdout" : "Dev"} · {m.lang === "hinglish" ? "Hinglish" : "English"}
-                </p>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-4 txt-small text-muted">
-            They&apos;re left unfixed on purpose. When the rules aren&apos;t sure, the order screen shows the words they didn&apos;t understand and asks the owner to choose.
+          <p className="mt-4 max-w-3xl text-[16px] leading-7 text-muted">
+            The aim is to move a clothing business from managing orders, spreadsheets, stockrooms and purchasing by hand to one system that understands its operations and helps it decide better.
           </p>
-          <div className="mt-auto pt-5">
-            <TextLink href="/parser">See all {s.cases.total} test cases</TextLink>
+          <ol className="mt-8 grid max-w-4xl gap-px overflow-hidden rounded-lg bg-line shadow-card sm:grid-cols-4">
+            {[["Orders arrive", "Messages, voice transcripts, manual entry or an uploaded order sheet"], ["Inventory and fulfilment", "Check stock, reserve items, locate garments, prepare pick lists"], ["Business intelligence", "Sales, stockouts, slow-moving products and demand"], ["Smarter purchasing", "What to reorder, in what quantity, and why"]].map(([t, d], i) => (
+              <li key={t} className="bg-panel px-4 py-3"><div className="text-xs text-faint tabular">{i + 1}</div><div className="text-[13px] font-medium">{t}</div><p className="mt-0.5 text-xs text-muted">{d}</p></li>
+            ))}
+          </ol>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <ButtonLink href="/login" variant="primary" size="lg">Open the live demo <ArrowRightIcon size={16} /></ButtonLink>
+            <ButtonLink href="/login?next=/investigations/OT-001" size="lg">See an investigation</ButtonLink>
           </div>
+          <p className="mt-4 text-xs text-faint">Demo sign-in, no password. Synthetic wholesaler in Gandhi Nagar, Delhi: 18 products, 220 size and colour variants, 150 days of trading.</p>
         </div>
-      </div>
-    </Section>
-  );
-}
+      </section>
 
-const PRINCIPLES = [
-  { icon: <ShieldCheckIcon />, title: "Reconciled on every page load", text: "The ledger is summed per SKU and compared with the stored on-hand and reserved counts." },
-  { icon: <ScrollIcon />, title: "Append-only", text: "Rows are never edited. A stock count that differs adds an adjust row, with the note that explains it." },
-  { icon: <PackageIcon />, title: "Reserved is its own number", text: "Free stock is on hand minus reserved, so a piece promised to one customer stays promised." },
-];
+      <Section id="modules" eyebrow="The complete product" title="One interface, one history of business events, three responsibilities." intro="The modules are not three applications. They read the same orders, stock movements, shipments and audit records from different angles.">
+        <div className="grid gap-3 md:grid-cols-3">
+          {[
+            [<ChartIcon key="i" />, "Operate", "RackPilot core", "Products, variants, inventory, orders, reservations, locations, picking, dispatch, sales analytics and purchasing recommendations.", "/dashboard"],
+            [<RouteIcon key="i" />, "Investigate", "OrderTrace", "Connects each order with its stock allocation, invoices, payments and dispatch records, and traces exactly where they stop agreeing.", "/ordertrace"],
+            [<BoxSearchIcon key="i" />, "Investigate", "StockSleuth", "Investigates missing stock, unexplained changes, wrong reservations and misplaced goods by replaying the stock ledger.", "/stocksleuth"],
+          ].map(([icon, k, t, d, href]) => (
+            <Card key={t as string} className="p-6">
+              <div className="flex items-center gap-2 text-accent">{icon}<span className="text-xs font-medium uppercase tracking-wide">{k}</span></div>
+              <h3 className="mt-3 h2-core">{t}</h3>
+              <p className="mt-2 txt-small text-muted">{d}</p>
+              <Link href={`/login?next=${href}`} className="mt-4 inline-flex items-center gap-1 text-xs text-accent hover:underline">Open {t} <ArrowRightIcon size={12} /></Link>
+            </Card>
+          ))}
+        </div>
+        <Card className="mt-3 p-6">
+          <div className="grid gap-4 md:grid-cols-3 txt-small">
+            <p><span className="font-medium">Operate:</span> <span className="text-muted">manage the business&apos;s orders and inventory.</span></p>
+            <p><span className="font-medium">Investigate:</span> <span className="text-muted">find discrepancies and reconstruct the events that caused them.</span></p>
+            <p><span className="font-medium">Optimise:</span> <span className="text-muted">use the resulting sales and stock data to decide what to buy.</span></p>
+          </div>
+        </Card>
+      </Section>
 
-function Ledger() {
-  return (
-    <Section
-      id="ledger"
-      eyebrow="Rules decide the stock"
-      title="Every number has a paper trail"
-      intro="AI can help read a messy message, but it never moves stock. Reservations, sales and counts are plain code inside one database transaction, and each one writes a ledger row."
-    >
-      <div className="grid gap-3 lg:grid-cols-[1fr_1.25fr]">
-        <ul className="space-y-3">
-          {PRINCIPLES.map((p) => (
-            <li key={p.title} className="flex gap-4 rounded-lg bg-panel p-5 shadow-card">
-              <IconBadge tone="ok">{p.icon}</IconBadge>
-              <div>
-                <h3 className="h3-core">{p.title}</h3>
-                <p className="mt-1 txt-small text-muted">{p.text}</p>
-              </div>
-            </li>
+      <Section eyebrow="1 · The problem" title="Each record looks reasonable on its own. Together they disagree." tint>
+        <ul className="grid gap-3 md:grid-cols-2">
+          {["Orders arrive in informal messages, not an order system.", "Products have many variants: size, colour, design, SKU, sometimes batch.", "Staff know a garment is somewhere in the stockroom, not where.", "Physical stock and recorded stock drift apart.", "Several orders compete for the last units.", "Owners can't easily see which sizes and designs sell and which sit.", "Purchasing runs on intuition rather than sales, commitments and lead times.", "Invoices, payments and dispatch notes live in separate tools and don't get cross-checked."].map((p) => (
+            <li key={p} className="rounded-lg bg-panel px-5 py-4 txt-small shadow-card">{p}</li>
           ))}
         </ul>
-        <div className="overflow-hidden rounded-lg bg-panel shadow-card">
-          <div className="border-b border-line px-6 py-4">
-            <h3 className="h3-core">The ledger for the order above</h3>
-            <p className="mt-1 txt-small text-muted">Reserved when it is confirmed, then turned into sales when it is handed over.</p>
-          </div>
-          <div className="overflow-x-auto">
-            <Table>
-              <thead>
-                <tr>
-                  <Th>Type</Th>
-                  <Th>SKU</Th>
-                  <Th align="right">Δ on hand</Th>
-                  <Th align="right">Δ reserved</Th>
-                </tr>
-              </thead>
-              <tbody>
-                {LEDGER.map((row, i) => (
-                  <tr key={i}>
-                    <Td>
-                      <MovementBadge type={row.type} />
-                    </Td>
-                    <Td>
-                      <Mono>{row.sku}</Mono>
-                    </Td>
-                    <Td align="right">
-                      <Delta n={row.onHand} />
-                    </Td>
-                    <Td align="right">
-                      <Delta n={row.reserved} />
-                    </Td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
-          <div className="border-t border-line px-6 py-3">
-            <TextLink href="/ledger">Filter the full ledger</TextLink>
-          </div>
+        <p className="mt-4 max-w-3xl text-xs text-faint">These are the problems RackPilot is built to address. How often and how badly each target customer has them still needs checking with real clothing-business owners.</p>
+      </Section>
+
+      <Section eyebrow="2 · Who it's for" title="Start narrow: a wholesaler or a small brand with enough orders for this to hurt.">
+        <div className="grid gap-3 md:grid-cols-3">
+          {[["Primary", "Small clothing wholesalers", "Many variants, repeat retailer orders, physical stock, frequent picking and packing. The main demo business, Saffron Thread Apparel, is one."], ["Secondary", "Independent apparel brands", "Own designs, variants to manage, sell-through to watch, replenishment to decide. The second demo tenant, Indigo Lane, is one."], ["Also", "Clothing retailers", "Accurate stock, fast product location, reliable fulfilment and better buying."]].map(([k, t, d]) => (
+            <Card key={t} className="p-6"><Badge tone={k === "Primary" ? "accent" : "neutral"}>{k}</Badge><h3 className="mt-3 h3-core">{t}</h3><p className="mt-2 txt-small text-muted">{d}</p></Card>
+          ))}
         </div>
-      </div>
-    </Section>
-  );
-}
+      </Section>
 
-const FAQ: { q: string; a: ReactNode }[] = [
-  {
-    q: "Is Rang Mahal Garments a real shop?",
-    a: "No. The shop, its customers and six months of its orders are generated, so the demo has realistic stock, sales and holds to work with.",
-  },
-  {
-    q: "Will my changes in the demo stay?",
-    a: "For a while. The live demo keeps its data in the server's memory and builds a fresh shop whenever the server restarts. Reset demo data, in the demo's sidebar, starts over at any time.",
-  },
-  {
-    q: "Does AI decide anything about stock?",
-    a: "No. Rules read the message, and plain code makes every reservation, sale and count. Claude can be switched on as a fallback for messages the rules can't read, and even then you confirm every line before stock moves. It's off in the live demo.",
-  },
-  { q: "Does it connect to WhatsApp?", a: "Not yet. You paste the message in; there's no WhatsApp Business API connection." },
-  {
-    q: "Can I run it myself?",
-    a: (
-      <>
-        Yes. Clone the{" "}
-        <a href={REPO_URL} className="text-accent hover:underline">
-          repository
-        </a>{" "}
-        and run <code className="font-mono text-[12px] text-fg">npm install</code> and <code className="font-mono text-[12px] text-fg">npm run dev</code> on Node 22.18+ or 24+.
-        It uses the SQLite built into Node, so there&apos;s no database to set up.
-      </>
-    ),
-  },
-];
+      <Section id="workflow" eyebrow="4 · The end-to-end workflow" title="Every feature shares the same records, so each step improves the next." tint intro="Better order records improve inventory visibility, better visibility improves fulfilment, and better sales records improve purchasing.">
+        <ol className="grid gap-px overflow-hidden rounded-lg bg-line shadow-card md:grid-cols-7">
+          {[["Stock is added", "Variants registered, quantities and rack locations recorded."], ["An order arrives", "Products, sizes, colours, quantities and deadline extracted."], ["Inventory is checked", "Variants matched, availability validated, shortages named."], ["Stock is reserved", "The same units can't be allocated twice."], ["Picked and dispatched", "Location-aware pick list; fulfilment recorded."], ["Performance updates", "Sales and movements feed analytics."], ["Purchasing is recommended", "Shortages found; quantities proposed from data."]].map(([t, d], i) => (
+            <li key={t} className="bg-panel p-4"><div className="text-xs text-faint tabular">Step {i + 1}</div><div className="mt-1 text-[13px] font-medium">{t}</div><p className="mt-1 text-xs text-muted">{d}</p></li>
+          ))}
+        </ol>
+      </Section>
 
-function Faq() {
-  return (
-    <Section id="faq" eyebrow="FAQ" title="Questions people ask first">
-      <div className="max-w-3xl divide-y divide-line overflow-hidden rounded-lg bg-panel shadow-card">
-        {FAQ.map((f) => (
-          <details key={f.q} className="group">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-4 text-[15px] font-medium outline-hidden transition-colors hover:bg-subtle focus-visible:bg-subtle [&::-webkit-details-marker]:hidden">
-              {f.q}
-              <ChevronRightIcon size={16} className="shrink-0 text-faint transition-transform group-open:rotate-90" />
-            </summary>
-            <div className="px-6 pb-5 txt-small text-muted">{f.a}</div>
-          </details>
-        ))}
-      </div>
-    </Section>
-  );
-}
-
-function Closing() {
-  return (
-    <section className="border-t border-line">
-      <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
-        <div className="relative overflow-hidden rounded-xl bg-panel px-6 py-14 text-center shadow-card sm:py-16">
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-grid" />
-          <div className="relative">
-            <h2 className="text-[28px] font-medium leading-9 tracking-[-0.02em] sm:text-[36px] sm:leading-[44px]">See it with a shop full of stock</h2>
-            <p className="mx-auto mt-3 max-w-xl text-[15px] leading-6 text-muted">
-              307 SKUs, six racks and six months of orders, all made up for the demo. Read an order, reserve it and print the pick list.
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <ButtonLink href="/dashboard" variant="primary" size="lg">
-                Open the live demo <ArrowRightIcon size={16} />
-              </ButtonLink>
-              <ButtonLink href={REPO_URL} size="lg">
-                <GithubIcon size={16} /> View the source
-              </ButtonLink>
-            </div>
-          </div>
+      <Section eyebrow="3 · Features" title="Nine capabilities, A to I, all working in the demo.">
+        <div className="grid gap-3 md:grid-cols-3">
+          {FEATURES.map(([k, t, d, href]) => (
+            <Card key={k} className="flex flex-col p-6">
+              <span className="font-mono text-xs text-faint">{k}</span>
+              <h3 className="mt-1 h3-core">{t}</h3>
+              <p className="mt-2 flex-1 txt-small text-muted">{d}</p>
+              <Link href={`/login?next=${encodeURIComponent(href)}`} className="mt-4 inline-flex items-center gap-1 text-xs text-accent hover:underline">Try it <ArrowRightIcon size={12} /></Link>
+            </Card>
+          ))}
         </div>
-      </div>
-    </section>
+      </Section>
+
+      <Section id="investigations" eyebrow="OrderTrace and StockSleuth" title="An investigation, not another dashboard alert." tint intro="A difference is not proof of an error, and a variance is not proof of theft. The rules establish what was expected, what each record says, which records support the finding and what still needs a person to verify.">
+        <div className="grid gap-3 lg:grid-cols-2">
+          <Card className="p-6">
+            <div className="flex items-center gap-2"><RouteIcon size={16} className="text-accent" /><h3 className="h2-core">The missing two shirts</h3></div>
+            <p className="mt-2 txt-small text-muted">ORD-1042: 20 blue oxford shirts ordered, 20 allocated, 20 picked, SHP-501 ships 20, INV-2058 bills 18, the customer pays for 18 and the order is marked completed.</p>
+            <dl className="mt-4 grid grid-cols-4 gap-2 text-center">
+              {[["Ordered", "20"], ["Allocated", "20"], ["Invoiced", "18"], ["Dispatched", "20"]].map(([k, v]) => <div key={k} className="rounded-md bg-subtle px-2 py-3"><dt className="text-xs text-muted">{k}</dt><dd className={cn("text-xl font-medium tabular", v === "18" && "text-bad")}>{v}</dd></div>)}
+            </dl>
+            <p className="mt-4 txt-small">OrderTrace checks for another invoice, a credit note, a return and a backorder, finds none, and opens <span className="font-mono">OT-001</span>. StockSleuth confirms the 20 left the warehouse. Three hypotheses stay labelled as unverified.</p>
+            <ButtonLink href="/login?next=/investigations/OT-001" size="sm" className="mt-4">Open OT-001</ButtonLink>
+          </Card>
+          <Card className="p-6">
+            <div className="flex items-center gap-2"><BoxSearchIcon size={16} className="text-info" /><h3 className="h2-core">Six tees have gone missing</h3></div>
+            <p className="mt-2 txt-small text-muted">BLK-TSH-M at Warehouse A → Rack R-12 → Shelf 3 → Bin 12: recorded 50, counted 44.</p>
+            <ol className="mt-4 space-y-1.5 text-xs">
+              {[["09:00", "Stock received", "50 on record"], ["10:15", "4 picked for ORD-1043", "booked here until dispatch"], ["11:30", "TRF-0087: 2 sent to the showroom rail", "never scanned in"], ["12:40", "ORD-1043 cancelled", "the picked reservation isn't released"], ["14:00", "Physical count", "44 on the shelf"]].map(([t, a, b]) => <li key={t} className="grid grid-cols-[44px_1fr] gap-2"><span className="text-faint tabular">{t}</span><span><span className="font-medium">{a}</span> <span className="text-muted">· {b}</span></span></li>)}
+            </ol>
+            <p className="mt-4 txt-small">StockSleuth opens <span className="font-mono">SS-004</span>: open records could explain 6 of the 6 units, likely in the packing area and on the rail. The recommended next step is to recount before approving any adjustment.</p>
+            <ButtonLink href="/login?next=/investigations/SS-004" size="sm" className="mt-4">Open SS-004</ButtonLink>
+          </Card>
+        </div>
+        <div className="mt-3 grid gap-3 lg:grid-cols-2">
+          {[["OrderTrace rules", ot], ["StockSleuth rules", ss]].map(([t, list]) => (
+            <Card key={t as string} className="p-6">
+              <h3 className="h3-core">{t as string}</h3>
+              <ul className="mt-3 space-y-2 text-xs">{(list as [string, { name: string; detects: string }][]).map(([id, r]) => <li key={id}><span className="font-mono text-faint">{id}</span> <span className="font-medium">{r.name}</span> <span className="text-muted">— {r.detects}</span></li>)}</ul>
+            </Card>
+          ))}
+        </div>
+        <Card className="mt-3 p-6">
+          <div className="flex items-center gap-2"><FileSearchIcon size={16} /><h3 className="h3-core">The shared investigation engine</h3></div>
+          <div className="mt-4 grid gap-4 md:grid-cols-4 txt-small">
+            {[["Fact", "The invoice lists 18 units and the dispatch record lists 20."], ["Inference", "The transaction may have an invoicing discrepancy."], ["Unverified hypothesis", "The invoice may be missing a line item."], ["Resolution", "An authorised employee confirms the quantity and records the correction."]].map(([k, v]) => <div key={k}><div className="font-medium">{k}</div><p className="mt-1 text-muted">{v}</p></div>)}
+          </div>
+          <p className="mt-5 text-xs text-muted">Lifecycle: detected → investigating → action required → resolved → closed. Outcomes include record corrected, goods located, adjustment approved, counting error, false positive, legitimate partial fulfilment and awaiting external confirmation. Each finding stores its rule and version, the expected and actual values, the calculation, the exceptions checked and its source records. Corrections are new, audited records, and a resolved finding never reopens the case.</p>
+        </Card>
+      </Section>
+
+      <Section id="ai" eyebrow="5 · What the AI actually does" title="An AI-enabled business system, not an LLM that controls everything." intro="The database and deterministic rules own stock, order state and money. Claude reads messy input and explains results it is handed; anything it writes is checked against the records first. Without an API key, every feature still works on rules.">
+        <div className="overflow-x-auto rounded-lg bg-panel shadow-card">
+          <table className="w-full text-left txt-compact-small">
+            <thead><tr className="border-b border-line bg-subtle text-muted"><th className="px-5 py-3 font-medium">Task</th><th className="px-5 py-3 font-medium">Mechanism</th><th className="px-5 py-3 font-medium">In RackPilot</th></tr></thead>
+            <tbody>{AI_TABLE.map(([a, b, c]) => <tr key={a} className="border-b border-line last:border-0"><td className="px-5 py-3 font-medium">{a}</td><td className="px-5 py-3 text-muted">{b}</td><td className="px-5 py-3 text-muted">{c}</td></tr>)}</tbody>
+          </table>
+        </div>
+      </Section>
+
+      <Section eyebrow="6 · Architecture" title="Next.js, a Node backend API, PostgreSQL, and one schema for all three modules." tint>
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <Card className="p-6 txt-small">
+            <ol className="space-y-3">
+              {[["Next.js frontend", "Dashboard, orders, inventory, pick lists, OrderTrace, StockSleuth, Investigation Centre, analytics, purchasing, assistant."], ["Backend API (Next.js route handlers, TypeScript)", "Session, tenant scoping, zod validation, role permissions, workflow orchestration; the checks re-run after every write."], ["PostgreSQL", "Run in-process by PGlite for the demo. Append-only ledger and audit trail enforced by triggers; CHECK constraints stop overselling."], ["AI services", "Claude for extraction, routing and explanation, with structured outputs and grounding checks."], ["Validated outputs", "Stock numbers that rebuild from the ledger, traceable findings and recommendations, owner-approved actions."]].map(([t, d]) => <li key={t}><div className="font-medium">{t}</div><div className="text-muted">{d}</div></li>)}
+            </ol>
+          </Card>
+          <Card className="p-6">
+            <h3 className="h3-core">The shared data model</h3>
+            <p className="mt-2 font-mono text-[12px] leading-6 text-muted">businesses · users · suppliers · customers · products · product_variants · locations · inventory_balances · stock_movements · orders · order_items · reservations · pick_lists · invoices / invoice_items · payments · shipments / shipment_items · transfers · returns · purchase_orders / receipts · physical_stock_counts · investigations · investigation_findings · investigation_evidence · investigation_events · audit_events · recommendations · documents</p>
+            <p className="mt-3 text-xs text-muted">Every business-owned row carries its business; the backend scopes every query to the signed-in user&apos;s business. Two tenants share the demo to show it.</p>
+          </Card>
+        </div>
+      </Section>
+
+      <Section eyebrow="7 · What makes it different" title="Not that it uses AI, or that it manages inventory. Those exist.">
+        <div className="grid gap-3 md:grid-cols-3">
+          {[["Less manual work", "Informal orders become structured operational records."], ["Operational accuracy", "Every order, movement and reservation is reflected consistently, and checked."], ["Actionable intelligence", "Traceable recommendations and evidence-backed investigations rather than static charts."]].map(([t, d]) => <Card key={t} className="p-6"><h3 className="h3-core">{t}</h3><p className="mt-2 txt-small text-muted">{d}</p></Card>)}
+        </div>
+        <p className="mt-6 max-w-3xl text-[15px] leading-7">RackPilot connects everyday clothing-business operations with evidence-backed investigations into why recorded transactions and stock don&apos;t reconcile.</p>
+      </Section>
+
+      <Section eyebrow="8 · Hackathon MVP versus the full product" title="What is built, and what is next." tint>
+        <div className="grid gap-3 md:grid-cols-3">
+          {[
+            ["Built now", "ok", ["Realistic clothing catalogue with sizes, colours and rack locations", "Message, voice-transcript and document order intake with confirmation", "Availability checks and safe reservations", "Location-aware pick lists", "Shortage and low-stock alerts", "Budget-aware replenishment from sample sales", "OrderTrace and StockSleuth rules, shared Investigation Centre, grounded explanation, authorised corrections with audit trail", "Dashboard showing the whole workflow"]],
+            ["Phase 2", "neutral", ["Barcode or QR scanning with a device camera (today: keyboard-wedge scanners and SKU search)", "Fuller supplier and purchase-order management", "Returns to suppliers", "Multi-period reporting", "Real authentication (Supabase Auth) on the same role checks", "Configurable reorder rules"]],
+            ["Phase 3", "neutral", ["WhatsApp and other channel integrations", "Camera-assisted intake", "Multiple warehouses", "Seasonal forecasting once a year of history exists", "Supplier lead-time learning", "Accounting and sales-channel integrations"]],
+          ].map(([t, tone, items]) => (
+            <Card key={t as string} className="p-6">
+              <Badge tone={tone as "ok" | "neutral"}>{t as string}</Badge>
+              <ul className="mt-3 list-disc space-y-1.5 pl-4 txt-small text-muted">{(items as string[]).map((i) => <li key={i}>{i}</li>)}</ul>
+            </Card>
+          ))}
+        </div>
+      </Section>
+
+      <Section id="measured" eyebrow="9 · How success is measured" title="Measured on the prototype, not claimed." intro="Numbers from the repository's own test sets and test run. The Measurements page in the demo recomputes most of them live.">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            [`${report.intake.exact}/${report.intake.cases}`, "order messages read fully right", `holdout ${report.intake.bySet.holdout.exact}/${report.intake.bySet.holdout.cases}; ambiguous lines asked ${report.intake.asked.correct}/${report.intake.asked.expected}; unknown variants refused ${report.intake.refused.correct}/${report.intake.refused.expected}`],
+            [`${report.retrieval.top1}/${report.retrieval.cases}`, "policy questions answered from the right section", `top 3: ${report.retrieval.top3}/${report.retrieval.cases}`],
+            [pct(report.backtest.productWape), "forecast error per product and week", `naive baseline ${pct(report.backtest.productNaiveWape)}; per variant ${pct(report.backtest.wape)}`],
+            [`${passed}/${report.results.length}`, "tests pass", "demo scenario, ambiguous and unknown orders, insufficient stock, simultaneous orders, missing history, tenants, roles"],
+          ].map(([v, l, d]) => <Card key={l} className="p-6"><div className="text-3xl font-medium tracking-tight tabular">{v}</div><div className="mt-1 text-[13px] font-medium">{l}</div><p className="mt-2 text-xs text-muted">{d}</p></Card>)}
+        </div>
+        <p className="mt-4 text-xs text-faint">Not yet measured: time to locate and pick (needs staff trials), usefulness of proposed quantities (needs owners), and the Claude reader&apos;s accuracy (needs a paid evaluation run).</p>
+      </Section>
+
+      <section className="border-t border-line bg-inverted text-inverted-fg">
+        <div className="mx-auto max-w-6xl px-4 py-16">
+          <div className="text-xs font-medium uppercase tracking-wide opacity-70">10 · The product in one definition</div>
+          <p className="mt-4 max-w-4xl text-[17px] leading-8 opacity-95">
+            RackPilot is an AI-assisted operations and business-intelligence platform for small clothing wholesalers and apparel businesses. It manages orders, stock, warehouse locations, fulfilment, sales analysis and purchasing decisions. Its OrderTrace module reconciles orders, invoices, payments and dispatch records to uncover transaction discrepancies. Its StockSleuth module reconstructs inventory movements to investigate stock variances, missing movement records, incorrect reservations and location inconsistencies. Both share an investigation engine that presents source-linked evidence, separates verified facts from hypotheses, recommends checks and records authorised resolutions.
+          </p>
+          <div className="mt-8"><ButtonLink href="/login" size="lg">Open the live demo <ArrowRightIcon size={16} /></ButtonLink></div>
+        </div>
+      </section>
+    </main>
   );
 }

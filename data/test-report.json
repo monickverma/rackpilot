@@ -1,0 +1,194 @@
+{
+  "ranAt": "2026-10-26T09:12:32.368Z",
+  "node": "v22.22.0",
+  "results": [
+    {
+      "area": "Seed",
+      "name": "Planted discrepancies are detected, and nothing else",
+      "passed": true,
+      "detail": "11 open cases: OT-001, OT-002, OT-003, OT-004, OT-005, SS-004, SS-005, SS-006, SS-007, SS-008, SS-009"
+    },
+    {
+      "area": "Seed",
+      "name": "History reconciles except the planted balance edit",
+      "passed": true,
+      "detail": "2984 movements; only GRY-JOG-L differs, as planted"
+    },
+    {
+      "area": "Seed",
+      "name": "ORD-1044's partial shipment with a backorder is not flagged",
+      "passed": true,
+      "detail": "legitimate partial fulfilment recognised"
+    },
+    {
+      "area": "Scenario",
+      "name": "1-2. Receive stock into its home bin",
+      "passed": true,
+      "detail": "PO-2704 received as GRN-0498: 36 units into the home bin, 0 reserved for backorders"
+    },
+    {
+      "area": "Scenario",
+      "name": "3. An order for 20 shirts is read, matched and reserved",
+      "passed": true,
+      "detail": "ORD-1048 confirmed with 20 reserved"
+    },
+    {
+      "area": "Scenario",
+      "name": "4. Picked and shipped 20, invoiced only 18",
+      "passed": true,
+      "detail": "SHP-508 ships 20; INV-2065 bills 18"
+    },
+    {
+      "area": "Scenario",
+      "name": "OrderTrace opens a case for the 2 unbilled units",
+      "passed": true,
+      "detail": "OT-006: 20 dispatched − 18 invoiced = 2 units unbilled; 2 × ₹415 = ₹830"
+    },
+    {
+      "area": "Scenario",
+      "name": "5. A transfer-out with no transfer-in, then a count, opens a StockSleuth case",
+      "passed": true,
+      "detail": "SS-010: TRF-0089 sent, count −2, transfer explains 2 of 2"
+    },
+    {
+      "area": "Scenario",
+      "name": "6-7. The case explains why it was flagged, from its own records",
+      "passed": true,
+      "detail": "ORD-1048 is flagged by the order vs invoice rule (OT-INV): dispatch quantity exceeds invoiced quantity by 2 units. SHP-508 records 20 units …"
+    },
+    {
+      "area": "Scenario",
+      "name": "8. Authorised corrections make the records agree; cases resolve and close",
+      "passed": true,
+      "detail": "OT-006 resolved; SS-010 resolved and closed; 6 audit events"
+    },
+    {
+      "area": "Scenario",
+      "name": "Resolved findings don't reopen",
+      "passed": true,
+      "detail": "a second check run opened nothing"
+    },
+    {
+      "area": "Intake",
+      "name": "Ambiguous order: the reader asks instead of picking",
+      "passed": true,
+      "detail": "\"tee\" fits 3 products: Classic Crew Tee (TSH), Oversized Drop-Shoulder Tee (OVT), Monsoon Waves Graphic Tee (GRT). Choose the right one."
+    },
+    {
+      "area": "Intake",
+      "name": "Unknown variant: never matched to a made-up SKU",
+      "passed": true,
+      "detail": "Pullover Hoodie (HOD) doesn't come in navy. Pick a variant or leave the line out."
+    },
+    {
+      "area": "Reservations",
+      "name": "Insufficient stock: reserves what is free, reports the rest, decides nothing",
+      "passed": true,
+      "detail": "71 reserved, 5 short, waiting for a decision"
+    },
+    {
+      "area": "Reservations",
+      "name": "Simultaneous orders can't oversell",
+      "passed": true,
+      "detail": "two concurrent orders each wanting all 88 free OLV-SHO-30: 88 reserved in total, one order short"
+    },
+    {
+      "area": "Reservations",
+      "name": "The database refuses a balance that would oversell",
+      "passed": true,
+      "detail": "CHECK (reserved <= on_hand) holds"
+    },
+    {
+      "area": "Ledger",
+      "name": "Stock movements are append-only",
+      "passed": true,
+      "detail": "UPDATE rejected by trigger; corrections are new rows"
+    },
+    {
+      "area": "Analytics",
+      "name": "Missing sales history: new products are 'too new', and a recording gap is flagged",
+      "passed": true,
+      "detail": "5 CRD variants too new to judge; gap of 3 days found"
+    },
+    {
+      "area": "Security",
+      "name": "Tenant isolation: one business can't read or use another's records",
+      "passed": true,
+      "detail": "cases and variants are scoped to the signed-in business"
+    },
+    {
+      "area": "Security",
+      "name": "Role permissions are enforced in the backend",
+      "passed": true,
+      "detail": "warehouse can't adjust or invoice; accounts can't dispatch"
+    },
+    {
+      "area": "Engine",
+      "name": "Running the checks twice changes nothing",
+      "passed": true,
+      "detail": "idempotent"
+    },
+    {
+      "area": "Purchasing",
+      "name": "Budget is a hard limit and supplier minimums hold",
+      "passed": true,
+      "detail": "₹5000: ₹0 on 0 lines; ₹30000: ₹29130 on 9 lines; ₹75000: ₹74660 on 11 lines"
+    }
+  ],
+  "intake": {
+    "cases": 44,
+    "exact": 42,
+    "bySet": {
+      "dev": {
+        "cases": 30,
+        "exact": 30
+      },
+      "holdout": {
+        "cases": 14,
+        "exact": 12
+      }
+    },
+    "byLang": {
+      "english": {
+        "cases": 28,
+        "exact": 27
+      },
+      "hinglish": {
+        "cases": 16,
+        "exact": 15
+      }
+    },
+    "lines": {
+      "expected": 71,
+      "correct": 68,
+      "extra": 2
+    },
+    "matched": {
+      "expected": 61,
+      "correct": 58
+    },
+    "asked": {
+      "expected": 6,
+      "correct": 6
+    },
+    "refused": {
+      "expected": 4,
+      "correct": 4
+    },
+    "wrongSku": 2
+  },
+  "retrieval": {
+    "cases": 12,
+    "top1": 10,
+    "top3": 11
+  },
+  "backtest": {
+    "weeks": 8,
+    "wape": 1.2526002971768202,
+    "naiveWape": 1.411441307578009,
+    "productWape": 0.662555720653789,
+    "productNaiveWape": 0.7237741456166419,
+    "totalWape": 0.37667161961367013,
+    "bias": -0.17786032689450224
+  }
+}

@@ -41,8 +41,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# local SQLite database (created and seeded on first run)
-local.db
-local.db-*
+# local PGlite database (created and seeded on first run)
+/.pglite/
 
 .vercel
